@@ -1,0 +1,3187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>罐箱总体设计平台 - AI辅助设计系统</title>
+  <style>
+    :root {
+      --bg: #f4faff;
+      --sidebar-bg: linear-gradient(180deg, #0b1a2a 0%, #102740 48%, #0d2238 100%);
+      --sidebar-text: #e8f6ff;
+      --accent: #1aa3ff;
+      --accent-light: rgba(26,163,255,0.15);
+      --accent-border: rgba(26,163,255,0.35);
+      --card-bg: rgba(255,255,255,0.86);
+      --card-shadow: 0 10px 22px rgba(7,30,55,0.08);
+      --text-primary: rgba(11,26,42,0.92);
+      --text-secondary: rgba(11,26,42,0.55);
+      --border: rgba(11,26,42,0.14);
+      --radius: 18px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    .app-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      grid-template-rows: 56px 1fr;
+      height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      grid-row: span 2;
+      background: var(--sidebar-bg);
+      color: var(--sidebar-text);
+      padding: 12px;
+      overflow-y: auto;
+      box-shadow: 6px 0 18px rgba(0,0,0,0.08);
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 8px 18px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      margin-bottom: 14px;
+    }
+
+    .sidebar-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: radial-gradient(circle at 30% 30%, #fff, rgba(26,163,255,0.35) 50%, rgba(26,163,255,0.15) 80%);
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      font-weight: 900;
+      color: #0b4f86;
+    }
+
+    .sidebar-title {
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.3;
+    }
+
+    .sidebar-title span {
+      display: block;
+      font-size: 10px;
+      font-weight: 600;
+      opacity: 0.6;
+    }
+
+    .nav-group {
+      margin-bottom: 8px;
+    }
+
+    .nav-group-title {
+      padding: 10px 12px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: rgba(232,246,255,0.55);
+      text-transform: uppercase;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: rgba(232,246,255,0.82);
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-bottom: 2px;
+    }
+
+    .nav-item:hover {
+      background: rgba(26,163,255,0.12);
+      color: #fff;
+    }
+
+    .nav-item.active {
+      background: rgba(26,163,255,0.18);
+      color: #fff;
+      border-left: 3px solid var(--accent);
+      margin-left: -3px;
+    }
+
+    .nav-item-icon {
+      width: 18px;
+      height: 18px;
+      opacity: 0.7;
+    }
+
+    .nav-sub-item {
+      padding-left: 42px;
+      font-size: 12px;
+      color: rgba(232,246,255,0.68);
+    }
+
+    .nav-sub-item.active {
+      color: var(--accent);
+      background: rgba(26,163,255,0.10);
+    }
+
+    /* Topbar */
+    .topbar {
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .breadcrumb-label {
+      opacity: 0.6;
+      font-weight: 800;
+    }
+
+    .breadcrumb-value {
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 20px;
+      background: var(--accent-light);
+      border: 1px solid var(--accent-border);
+      font-weight: 800;
+      color: #0b4f86;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .topbar-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #fff;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .topbar-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--card-shadow);
+    }
+
+    .user-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #fff, #cfeaff 40%, #6ec7ff 70%, #1a86d6);
+      border: 1px solid var(--border);
+    }
+
+    .user-name {
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    /* Main content */
+    .main-content {
+      position: relative;
+      overflow: auto;
+      padding: 18px;
+      background: linear-gradient(135deg, #f4faff 0%, #e8f6ff 50%, #f0f9ff 100%);
+    }
+
+    .main-content::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(rgba(10,60,110,0.06) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(10,60,110,0.06) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: radial-gradient(circle at 60% 35%, rgba(0,0,0,0.75), rgba(0,0,0,0) 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Pages */
+    .page {
+      display: none;
+      position: relative;
+      z-index: 1;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    /* Card styles */
+    .card {
+      position: relative;
+      border-radius: var(--radius);
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      box-shadow: var(--card-shadow);
+      padding: 24px;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(rgba(10,60,110,0.05) 1px, transparent 1px),
+                  linear-gradient(90deg, rgba(10,60,110,0.05) 1px, transparent 1px);
+      background-size: 44px 44px;
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    .card-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--text-primary);
+      letter-spacing: 0.5px;
+    }
+
+    .card-subtitle {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text-secondary);
+    }
+
+    /* Section card */
+    .section-card {
+      border-radius: 16px;
+      border: 1px solid rgba(11,26,42,0.12);
+      background: rgba(255,255,255,0.78);
+      box-shadow: 0 10px 22px rgba(7,30,55,0.08);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      color: #0b1a2a;
+      margin-bottom: 12px;
+    }
+
+    .section-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, rgba(26,163,255,0.95), rgba(26,163,255,0.25));
+      box-shadow: 0 6px 14px rgba(26,163,255,0.25);
+    }
+
+    .section-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: -8px;
+      margin-bottom: 12px;
+    }
+
+    /* Form elements */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 900;
+      color: rgba(11,26,42,0.76);
+    }
+
+    .form-input, .form-select, .form-textarea {
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.95);
+      padding: 0 12px;
+      font-size: 14px;
+      font-weight: 700;
+      outline: none;
+      transition: all 0.15s;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: rgba(26,163,255,0.55);
+      box-shadow: 0 0 0 3px rgba(26,163,255,0.16);
+    }
+
+    .form-textarea {
+      height: auto;
+      min-height: 80px;
+      padding: 12px;
+      resize: vertical;
+    }
+
+    .form-select {
+      appearance: none;
+      background-image: linear-gradient(45deg, transparent 50%, rgba(11,26,42,0.45) 50%),
+                        linear-gradient(135deg, rgba(11,26,42,0.45) 50%, transparent 50%);
+      background-position: calc(100% - 18px) 18px, calc(100% - 12px) 18px;
+      background-size: 6px 6px, 6px 6px;
+      background-repeat: no-repeat;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 40px;
+      padding: 0 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent-light);
+      border: 1px solid var(--accent-border);
+      color: #0b1a2a;
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 8px 20px rgba(26,163,255,0.25);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: #fff;
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+    }
+
+    .btn-outline:hover {
+      background: #f8f9fa;
+    }
+
+    .btn-accent {
+      background: linear-gradient(135deg, var(--accent), rgba(26,163,255,0.7));
+      color: #fff;
+    }
+
+    .btn-accent:hover {
+      box-shadow: 0 8px 20px rgba(26,163,255,0.35);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    /* Position card */
+    .position-card {
+      border-radius: 14px;
+      background: rgba(255,255,255,0.86);
+      border: 1px solid var(--border);
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+
+    .position-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .position-title {
+      font-weight: 900;
+      color: rgba(11,26,42,0.86);
+    }
+
+    .position-hint {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text-secondary);
+    }
+
+    .position-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .position-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .position-box {
+      border-radius: 12px;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid var(--border);
+      padding: 12px;
+    }
+
+    .position-box-title {
+      font-size: 12px;
+      font-weight: 900;
+      color: rgba(11,26,42,0.74);
+      margin-bottom: 8px;
+    }
+
+    .xyz-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .xyz-input {
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.96);
+      padding: 0 12px;
+      font-size: 14px;
+      font-weight: 700;
+      outline: none;
+      text-align: center;
+    }
+
+    .xyz-input:focus {
+      border-color: rgba(26,163,255,0.55);
+      box-shadow: 0 0 0 3px rgba(26,163,255,0.16);
+    }
+
+    /* Category cards */
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 12px;
+    }
+
+    .category-card {
+      padding: 16px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.86);
+      border: 2px solid var(--border);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .category-card:hover {
+      border-color: rgba(26,163,255,0.4);
+      box-shadow: 0 8px 20px rgba(26,163,255,0.12);
+    }
+
+    .category-card.selected {
+      border-color: var(--accent);
+      background: rgba(26,163,255,0.08);
+    }
+
+    .category-name {
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .category-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* Recommendation cards */
+    .rec-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .rec-card {
+      border-radius: 14px;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid var(--border);
+      padding: 16px;
+      transition: all 0.15s;
+    }
+
+    .rec-card:hover {
+      box-shadow: 0 10px 30px rgba(7,30,55,0.12);
+    }
+
+    .rec-title {
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+
+    .rec-specs {
+      margin-bottom: 16px;
+    }
+
+    .rec-spec {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px dashed var(--border);
+      font-size: 13px;
+    }
+
+    .rec-spec-label {
+      color: var(--text-secondary);
+    }
+
+    .rec-spec-value {
+      font-weight: 700;
+    }
+
+    .rec-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Step tabs */
+    .step-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .step-tab {
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: rgba(255,255,255,0.6);
+      border: 1px solid var(--border);
+      color: rgba(11,26,42,0.6);
+    }
+
+    .step-tab:hover {
+      background: rgba(255,255,255,0.8);
+    }
+
+    .step-tab.active {
+      background: rgba(26,163,255,0.2);
+      border-color: rgba(26,163,255,0.3);
+      color: #0b1a2a;
+    }
+
+    /* Check items */
+    .check-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.7);
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .check-item:hover {
+      background: rgba(255,255,255,0.9);
+    }
+
+    .check-item-title {
+      font-weight: 800;
+      color: rgba(11,26,42,0.82);
+    }
+
+    .check-item-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      color: rgba(11,26,42,0.75);
+    }
+
+    .checkbox {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      accent-color: var(--accent);
+    }
+
+    /* File upload area */
+    .upload-area {
+      border-radius: 16px;
+      border: 2px dashed rgba(11,26,42,0.22);
+      background: rgba(255,255,255,0.6);
+      min-height: 220px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .upload-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: var(--accent-light);
+      border: 1px solid var(--accent-border);
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+      font-weight: 900;
+      color: #0b1a2a;
+    }
+
+    .upload-title {
+      font-size: 16px;
+      font-weight: 900;
+      color: #0b1a2a;
+    }
+
+    .upload-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Preview area */
+    .preview-area {
+      border-radius: 16px;
+      border: 2px dashed rgba(11,26,42,0.22);
+      background: linear-gradient(0deg, rgba(255,255,255,0.62), rgba(255,255,255,0.62)),
+                  linear-gradient(90deg, rgba(10,60,110,0.05) 1px, transparent 1px),
+                  linear-gradient(0deg, rgba(10,60,110,0.05) 1px, transparent 1px);
+      background-size: auto, 32px 32px, 32px 32px;
+      min-height: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      text-align: center;
+      padding: 24px;
+    }
+
+    /* Module tiles for home page */
+    .home-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .module-tile {
+      position: relative;
+      height: 150px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(11,26,42,0.15);
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .module-tile:hover {
+      border-color: rgba(26,163,255,0.4);
+      box-shadow: 0 14px 40px rgba(26,163,255,0.18);
+      transform: translateY(-2px);
+    }
+
+    .module-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 16px;
+      background: radial-gradient(circle at 30% 30%, #ffffff, rgba(26,163,255,0.22) 45%, rgba(26,163,255,0.10) 70%);
+      border: 1px solid rgba(26,163,255,0.25);
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+    }
+
+    .module-title {
+      font-size: 18px;
+      font-weight: 900;
+      color: rgba(11,26,42,0.9);
+    }
+
+    .module-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 700;
+    }
+
+    .full-width {
+      grid-column: span 2;
+    }
+
+    /* Hero tank model */
+    .hero-area {
+      grid-column: span 2;
+      position: relative;
+      height: 320px;
+      border-radius: 26px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.8));
+      border: 1px solid rgba(11,26,42,0.16);
+      box-shadow: var(--card-shadow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      overflow: hidden;
+    }
+
+    .hero-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 18px;
+      background: radial-gradient(160px 140px at 25% 30%, rgba(26,163,255,0.20), transparent 60%),
+                  radial-gradient(220px 160px at 75% 55%, rgba(26,163,255,0.16), transparent 65%),
+                  linear-gradient(180deg, rgba(10,60,110,0.06), rgba(10,60,110,0.02));
+      border: 2px dashed rgba(11,26,42,0.18);
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+
+    .hero-footer {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 900;
+      color: rgba(11,26,42,0.7);
+    }
+
+    .hero-badge {
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 20px;
+      background: var(--accent-light);
+      border: 1px solid var(--accent-border);
+      font-weight: 900;
+      color: #0b4f86;
+    }
+
+    /* Parts library */
+    .parts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .parts-category {
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.78);
+      box-shadow: var(--card-shadow);
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .parts-category:hover {
+      border-color: rgba(26,163,255,0.4);
+      box-shadow: 0 14px 30px rgba(26,163,255,0.15);
+    }
+
+    .parts-category-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .parts-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: var(--accent-light);
+      border: 1px solid var(--accent-border);
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+    }
+
+    .parts-info {
+      flex: 1;
+    }
+
+    .parts-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .parts-title {
+      font-weight: 900;
+      color: rgba(11,26,42,0.88);
+    }
+
+    .parts-count {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--accent);
+      background: var(--accent-light);
+      padding: 4px 8px;
+      border-radius: 20px;
+    }
+
+    .parts-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* Empty state */
+    .empty-state {
+      border-radius: 16px;
+      border: 2px dashed rgba(11,26,42,0.22);
+      background: rgba(255,255,255,0.55);
+      padding: 32px;
+      text-align: center;
+    }
+
+    .empty-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 16px;
+      border-radius: 16px;
+      background: var(--accent-light);
+      border: 1px solid var(--accent-border);
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+    }
+
+    .empty-title {
+      font-weight: 900;
+      color: rgba(11,26,42,0.8);
+      margin-bottom: 8px;
+    }
+
+    .empty-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Design modules */
+    .design-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .design-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .design-module {
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.78);
+      box-shadow: var(--card-shadow);
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .design-module:hover {
+      border-color: rgba(26,163,255,0.4);
+      box-shadow: 0 14px 30px rgba(26,163,255,0.15);
+    }
+
+    .design-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      background: var(--accent-light);
+      border: 1px solid var(--accent-border);
+      display: grid;
+      place-items: center;
+      margin-bottom: 12px;
+      font-size: 24px;
+    }
+
+    .design-title {
+      font-weight: 900;
+      color: rgba(11,26,42,0.88);
+      margin-bottom: 4px;
+    }
+
+    .design-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* Verification pages */
+    .verify-section {
+      margin-bottom: 20px;
+    }
+
+    .verify-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .verify-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--accent-light);
+      border: 1px solid var(--accent-border);
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+    }
+
+    .verify-title {
+      font-weight: 900;
+      color: var(--text-primary);
+    }
+
+    .verify-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .badge-pass {
+      background: rgba(34,197,94,0.15);
+      color: #166534;
+      border: 1px solid rgba(34,197,94,0.3);
+    }
+
+    .badge-fail {
+      background: rgba(239,68,68,0.15);
+      color: #991b1b;
+      border: 1px solid rgba(239,68,68,0.3);
+    }
+
+    .badge-pending {
+      background: rgba(234,179,8,0.15);
+      color: #854d0e;
+      border: 1px solid rgba(234,179,8,0.3);
+    }
+
+    /* Progress bar */
+    .progress-bar {
+      height: 8px;
+      background: rgba(11,26,42,0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), rgba(26,163,255,0.6));
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+
+    /* Highlight box */
+    .highlight-box {
+      background: rgba(234,179,8,0.08);
+      border: 1px solid rgba(234,179,8,0.3);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+
+    /* Footer */
+    .app-footer {
+      grid-column: span 2;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: linear-gradient(180deg, transparent, rgba(11,26,42,0.04));
+      border-top: 1px solid var(--border);
+      border-radius: 14px;
+      margin-top: 16px;
+    }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 20px;
+      border-radius: 12px;
+      background: #0b1a2a;
+      color: #fff;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success {
+      background: linear-gradient(135deg, #059669, #10b981);
+    }
+
+    .toast.info {
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .app-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: 56px 1fr;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .home-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .full-width, .hero-area {
+        grid-column: span 1;
+      }
+    }
+
+    /* Quantity input wrapper */
+    .qty-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-light);
+      border: 1px solid var(--accent-border);
+      padding: 6px 12px;
+      border-radius: 20px;
+    }
+
+    .qty-label {
+      font-size: 12px;
+      font-weight: 900;
+      color: rgba(11,26,42,0.75);
+    }
+
+    .qty-input {
+      width: 78px;
+      height: 30px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.96);
+      padding: 0 12px;
+      font-size: 14px;
+      font-weight: 900;
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">▣</div>
+        <div class="sidebar-title">
+          罐箱总体设计平台
+          <span>AI辅助设计系统</span>
+        </div>
+      </div>
+
+      <nav>
+        <div class="nav-group">
+          <div class="nav-item" onclick="showPage('home')">
+            <span class="nav-item-icon">🏠</span>
+            首页
+          </div>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">总体设计</div>
+          <div class="nav-item" onclick="showPage('spec')">
+            <span class="nav-item-icon">📋</span>
+            设计规范
+          </div>
+          <div class="nav-item" onclick="showPage('frame')">
+            <span class="nav-item-icon">🏗️</span>
+            框架
+          </div>
+          <div class="nav-item" onclick="showPage('tank')">
+            <span class="nav-item-icon">🛢️</span>
+            罐体
+          </div>
+          <div class="nav-item" onclick="showPage('parts')">
+            <span class="nav-item-icon">⚙️</span>
+            部件
+          </div>
+          <div class="nav-item" onclick="showPage('insulation')">
+            <span class="nav-item-icon">🧊</span>
+            保温＆外包
+          </div>
+          <div class="nav-item" onclick="showPage('protection')">
+            <span class="nav-item-icon">🛡️</span>
+            防腐保护
+          </div>
+          <div class="nav-item" onclick="showPage('quote')">
+            <span class="nav-item-icon">📄</span>
+            报价总图
+          </div>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">布局设计</div>
+          <div class="nav-item" onclick="showPage('position')">
+            <span class="nav-item-icon">📍</span>
+            位置信息
+          </div>
+          <div class="nav-item" onclick="showPage('check')">
+            <span class="nav-item-icon">✅</span>
+            校核信息
+          </div>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">选配设计</div>
+          <div class="nav-sub-item" style="padding-left: 24px; font-weight: 800; margin-bottom: 4px; color: rgba(232,246,255,0.5);">阀门选型配置器</div>
+          <div class="nav-item nav-sub-item" onclick="showPage('safety')">
+            安全阀选配
+          </div>
+          <div class="nav-item nav-sub-item" onclick="showPage('control')">
+            控制阀选配
+          </div>
+          <div class="nav-item nav-sub-item" onclick="showPage('flange')">
+            凸缘选配
+          </div>
+          <div class="nav-item nav-sub-item" onclick="showPage('maintenance')">
+            维护清洗功能
+          </div>
+          <div class="nav-sub-item" style="padding-left: 24px; font-weight: 800; margin-bottom: 4px; margin-top: 12px; color: rgba(232,246,255,0.5);">阀组件设计校核</div>
+          <div class="nav-item nav-sub-item" onclick="showPage('verify-basic')">
+            基础信息核对
+          </div>
+          <div class="nav-item nav-sub-item" onclick="showPage('verify-position')">
+            定位属性确认
+          </div>
+          <div class="nav-item nav-sub-item" onclick="showPage('verify-procurement')">
+            采购信息传递
+          </div>
+          <div class="nav-item nav-sub-item" onclick="showPage('verify-drawing')">
+            部件图配置
+          </div>
+          <div class="nav-item nav-sub-item" onclick="showPage('verify-memo')">
+            订单备注模板
+          </div>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">其他</div>
+          <div class="nav-item" onclick="showPage('parts-library')">
+            <span class="nav-item-icon">📦</span>
+            零部件库
+          </div>
+          <div class="nav-item" onclick="showPage('valve-design')">
+            <span class="nav-item-icon">🔧</span>
+            阀组件设计
+          </div>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="breadcrumb">
+        <span class="breadcrumb-label">当前位置</span>
+        <span class="breadcrumb-value" id="breadcrumb">首页</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="topbar-btn" title="搜索">🔍</button>
+        <button class="topbar-btn" title="帮助">❓</button>
+        <div style="display: flex; align-items: center; gap: 10px; padding-left: 8px; border-left: 1px solid var(--border); margin-left: 6px;">
+          <div class="user-avatar"></div>
+          <span class="user-name">admin</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Home Page -->
+      <div id="page-home" class="page active">
+        <div class="home-grid">
+          <div class="module-tile" onclick="showPage('spec')">
+            <div class="module-icon">📐</div>
+            <div class="module-title">总体设计</div>
+            <div class="module-subtitle">参数/结构/约束</div>
+          </div>
+          <div class="module-tile" onclick="showPage('position')">
+            <div class="module-icon">📍</div>
+            <div class="module-title">布局设计</div>
+            <div class="module-subtitle">部件布置/空间校核</div>
+          </div>
+          <div class="module-tile" onclick="showPage('parts-library')">
+            <div class="module-icon">📦</div>
+            <div class="module-title">零部件库</div>
+            <div class="module-subtitle">标准件/自定义件</div>
+          </div>
+          <div class="module-tile" onclick="showPage('safety')">
+            <div class="module-icon">⚙️</div>
+            <div class="module-title">选配设计</div>
+            <div class="module-subtitle">配置组合/清单输出</div>
+          </div>
+          <div class="module-tile full-width" onclick="showPage('valve-design')">
+            <div class="module-icon">🔧</div>
+            <div class="module-title">阀组件设计</div>
+            <div class="module-subtitle">阀门/管路/接口</div>
+          </div>
+          <div class="hero-area">
+            <div class="hero-inner">
+              <svg style="width: min(420px, 92%); height: auto; opacity: 0.95;" viewBox="0 0 720 360">
+                <defs>
+                  <linearGradient id="m1" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#e9f7ff" />
+                    <stop offset="0.5" stop-color="#bfe8ff" />
+                    <stop offset="1" stop-color="#6ec7ff" />
+                  </linearGradient>
+                  <linearGradient id="m2" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#0b4f86" stop-opacity="0.22" />
+                    <stop offset="1" stop-color="#0b4f86" stop-opacity="0.04" />
+                  </linearGradient>
+                </defs>
+                <rect x="70" y="240" width="580" height="62" rx="14" fill="rgba(10,60,110,0.06)" stroke="rgba(10,60,110,0.22)" />
+                <rect x="90" y="255" width="540" height="32" rx="12" fill="url(#m2)" stroke="rgba(10,60,110,0.20)" />
+                <rect x="150" y="92" width="420" height="148" rx="74" fill="url(#m1)" stroke="rgba(10,60,110,0.28)" stroke-width="2" />
+                <ellipse cx="150" cy="166" rx="38" ry="74" fill="rgba(255,255,255,0.45)" stroke="rgba(10,60,110,0.22)" stroke-width="2" />
+                <ellipse cx="570" cy="166" rx="38" ry="74" fill="rgba(255,255,255,0.32)" stroke="rgba(10,60,110,0.22)" stroke-width="2" />
+                <rect x="210" y="232" width="26" height="24" rx="6" fill="rgba(10,60,110,0.10)" stroke="rgba(10,60,110,0.22)" />
+                <rect x="484" y="232" width="26" height="24" rx="6" fill="rgba(10,60,110,0.10)" stroke="rgba(10,60,110,0.22)" />
+                <rect x="570" y="144" width="58" height="44" rx="10" fill="rgba(26,163,255,0.18)" stroke="rgba(10,60,110,0.26)" />
+                <path d="M602 144 v-22" stroke="rgba(10,60,110,0.30)" stroke-width="6" stroke-linecap="round" />
+                <circle cx="602" cy="118" r="10" fill="rgba(26,163,255,0.25)" stroke="rgba(10,60,110,0.30)" stroke-width="2" />
+                <path d="M205 120 C310 70 420 70 520 110" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="10" stroke-linecap="round" />
+                <path d="M190 205 C290 250 430 245 540 210" fill="none" stroke="#0b4f86" stroke-opacity="0.14" stroke-width="14" stroke-linecap="round" />
+              </svg>
+              <div class="hero-footer">
+                <span>三维模型/总览区</span>
+                <span class="hero-badge">点击菜单进入模块</span>
+              </div>
+            </div>
+          </div>
+          <div class="app-footer">© 罐箱总体设计平台 · AI辅助设计系统</div>
+        </div>
+      </div>
+
+      <!-- Spec Page -->
+      <div id="page-spec" class="page">
+        <div class="card">
+          <div class="card-content">
+            <div class="card-header">
+              <h2 class="card-title">总体设计 · 设计规范</h2>
+              <span class="card-subtitle">参数录入</span>
+            </div>
+            <form>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">罐箱类型</label>
+                  <select class="form-select">
+                    <option value="">请选择罐箱类型</option>
+                    <option value="t11">T11 - 普通液体</option>
+                    <option value="t14">T14 - 腐蚀性液体</option>
+                    <option value="t50">T50 - 液化气体</option>
+                    <option value="t75">T75 - 低温液体</option>
+                    <option value="other">其他</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">规格型号</label>
+                  <input type="text" class="form-input" placeholder="例如：20ft / 40ft / 特种型号…">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">尺寸（L×W×H）</label>
+                  <input type="text" class="form-input" placeholder="例如：6058×2438×2591 mm">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">容积</label>
+                  <input type="text" class="form-input" placeholder="例如：24000 L">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">自重</label>
+                  <input type="text" class="form-input" placeholder="例如：3200 kg">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">总重</label>
+                  <input type="text" class="form-input" placeholder="例如：30480 kg">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">设计压力</label>
+                  <input type="text" class="form-input" placeholder="例如：0.45 MPa">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">设计温度</label>
+                  <input type="text" class="form-input" placeholder="例如：-40℃ ~ +130℃">
+                </div>
+              </div>
+              <div class="form-group" style="margin-top: 16px;">
+                <label class="form-label">装载介质</label>
+                <input type="text" class="form-input" placeholder="例如：液氨 / 乙醇 / 食用油…">
+              </div>
+              <div class="check-item" style="margin-top: 16px;">
+                <span class="check-item-title">是否满足设计温度</span>
+                <div class="check-item-right">
+                  <input type="checkbox" class="checkbox">
+                  <span>满足设计温度要求</span>
+                </div>
+              </div>
+              <div class="btn-group">
+                <button type="button" class="btn btn-primary" onclick="showToast('设计规范已保存', 'success')">保存（原型）</button>
+                <button type="button" class="btn btn-outline" onclick="showToast('已清空表单', 'info')">清空</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Frame Page -->
+      <div id="page-frame" class="page">
+        <div class="card">
+          <div class="card-content">
+            <div class="card-header">
+              <h2 class="card-title">总体设计 · 框架</h2>
+              <span class="card-subtitle">参数录入</span>
+            </div>
+            <form>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">框架类型</label>
+                  <input type="text" class="form-input" placeholder="例如：ISO 框架 / 加强型框架 …">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">框架尺寸</label>
+                  <input type="text" class="form-input" placeholder="例如：L×W×H 或 20ft/40ft">
+                </div>
+              </div>
+              <div class="form-group" style="margin-top: 16px;">
+                <label class="form-label">框架材质</label>
+                <input type="text" class="form-input" placeholder="例如：Q345B / Q355 / 不锈钢 …">
+              </div>
+
+              <div class="position-card">
+                <div class="position-header">
+                  <span class="position-title">底侧梁</span>
+                  <span class="position-hint">位置信息（绝对 + 相对）</span>
+                </div>
+                <div class="position-grid">
+                  <div class="position-box">
+                    <div class="position-box-title">绝对位置（X, Y, Z）</div>
+                    <div class="xyz-grid">
+                      <input type="text" class="xyz-input" placeholder="X">
+                      <input type="text" class="xyz-input" placeholder="Y">
+                      <input type="text" class="xyz-input" placeholder="Z">
+                    </div>
+                    <div class="position-box-title" style="margin-top: 8px;">单位/坐标系</div>
+                    <input type="text" class="form-input" placeholder="例如：mm，基于框架原点/ISO角件">
+                  </div>
+                  <div class="position-box">
+                    <div class="position-box-title">相对信息（相对零部件 + 位移/描述）</div>
+                    <input type="text" class="form-input" placeholder="相对基准零部件" style="margin-bottom: 8px;">
+                    <div class="position-box-title">相对位移（Δx, Δy, Δz）</div>
+                    <div class="xyz-grid">
+                      <input type="text" class="xyz-input" placeholder="Δx">
+                      <input type="text" class="xyz-input" placeholder="Δy">
+                      <input type="text" class="xyz-input" placeholder="Δz">
+                    </div>
+                    <textarea class="form-textarea" style="margin-top: 8px;" placeholder="相对关系描述（可选）"></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <div class="position-card">
+                <div class="position-header">
+                  <span class="position-title">顶侧梁</span>
+                  <span class="position-hint">位置信息（绝对 + 相对）</span>
+                </div>
+                <div class="position-grid">
+                  <div class="position-box">
+                    <div class="position-box-title">绝对位置（X, Y, Z）</div>
+                    <div class="xyz-grid">
+                      <input type="text" class="xyz-input" placeholder="X">
+                      <input type="text" class="xyz-input" placeholder="Y">
+                      <input type="text" class="xyz-input" placeholder="Z">
+                    </div>
+                  </div>
+                  <div class="position-box">
+                    <div class="position-box-title">相对信息</div>
+                    <input type="text" class="form-input" placeholder="相对基准零部件">
+                  </div>
+                </div>
+              </div>
+
+              <div class="position-card">
+                <div class="position-header">
+                  <span class="position-title">接地板</span>
+                  <span class="position-hint">位置信息（绝对 + 相对）</span>
+                </div>
+                <div class="position-grid">
+                  <div class="position-box">
+                    <div class="position-box-title">绝对位置（X, Y, Z）</div>
+                    <div class="xyz-grid">
+                      <input type="text" class="xyz-input" placeholder="X">
+                      <input type="text" class="xyz-input" placeholder="Y">
+                      <input type="text" class="xyz-input" placeholder="Z">
+                    </div>
+                  </div>
+                  <div class="position-box">
+                    <div class="position-box-title">相对信息</div>
+                    <input type="text" class="form-input" placeholder="相对基准零部件">
+                  </div>
+                </div>
+              </div>
+
+              <div class="position-card">
+                <div class="position-header">
+                  <span class="position-title">梯子</span>
+                  <span class="position-hint">位置信息（绝对 + 相对）</span>
+                </div>
+                <div class="position-grid">
+                  <div class="position-box">
+                    <div class="position-box-title">绝对位置（X, Y, Z）</div>
+                    <div class="xyz-grid">
+                      <input type="text" class="xyz-input" placeholder="X">
+                      <input type="text" class="xyz-input" placeholder="Y">
+                      <input type="text" class="xyz-input" placeholder="Z">
+                    </div>
+                  </div>
+                  <div class="position-box">
+                    <div class="position-box-title">相对信息</div>
+                    <input type="text" class="form-input" placeholder="相对基准零部件">
+                  </div>
+                </div>
+              </div>
+
+              <div class="position-card">
+                <div class="position-header">
+                  <span class="position-title">步道</span>
+                  <span class="position-hint">位置信息（绝对 + 相对）</span>
+                </div>
+                <div class="position-grid">
+                  <div class="position-box">
+                    <div class="position-box-title">绝对位置（X, Y, Z）</div>
+                    <div class="xyz-grid">
+                      <input type="text" class="xyz-input" placeholder="X">
+                      <input type="text" class="xyz-input" placeholder="Y">
+                      <input type="text" class="xyz-input" placeholder="Z">
+                    </div>
+                  </div>
+                  <div class="position-box">
+                    <div class="position-box-title">相对信息</div>
+                    <input type="text" class="form-input" placeholder="相对基准零部件">
+                  </div>
+                </div>
+              </div>
+
+              <div class="btn-group">
+                <button type="button" class="btn btn-primary" onclick="showToast('框架信息已保存', 'success')">保存（原型）</button>
+                <button type="button" class="btn btn-outline" onclick="showToast('已清空表单', 'info')">清空</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tank Page -->
+      <div id="page-tank" class="page">
+        <div class="card">
+          <div class="card-content">
+            <div class="card-header">
+              <h2 class="card-title">总体设计 · 罐体</h2>
+              <span class="card-subtitle">参数录入</span>
+            </div>
+            <form>
+              <div class="form-group">
+                <label class="form-label">罐体材质</label>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                  <select class="form-select" style="width: 160px;">
+                    <option value="shell">筒体材质</option>
+                    <option value="head">封头材质</option>
+                  </select>
+                  <input type="text" class="form-input" style="flex: 1; min-width: 200px;" placeholder="例如：316L / 304 / Q345R …">
+                </div>
+              </div>
+              <div class="form-grid" style="margin-top: 16px;">
+                <div class="form-group">
+                  <label class="form-label">罐体厚度</label>
+                  <input type="text" class="form-input" placeholder="例如：6 mm">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">防波板</label>
+                  <input type="text" class="form-input" placeholder="例如：有（形式/数量…）或 无">
+                </div>
+              </div>
+              <div class="btn-group">
+                <button type="button" class="btn btn-primary" onclick="showToast('罐体信息已保存', 'success')">保存（原型）</button>
+                <button type="button" class="btn btn-outline" onclick="showToast('已清空表单', 'info')">清空</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Parts Page -->
+      <div id="page-parts" class="page">
+        <div class="card">
+          <div class="card-content">
+            <div class="card-header">
+              <h2 class="card-title">总体设计 · 部件</h2>
+              <span class="card-subtitle">位置信息与数量</span>
+            </div>
+            <form>
+              <div class="position-card">
+                <div class="position-header">
+                  <span class="position-title">人孔</span>
+                  <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <div class="qty-wrapper">
+                      <span class="qty-label">数量</span>
+                      <input type="number" class="qty-input" value="1" min="0">
+                    </div>
+                    <span class="position-hint">位置信息（绝对 + 相对）</span>
+                  </div>
+                </div>
+                <div class="position-grid">
+                  <div class="position-box">
+                    <div class="position-box-title">绝对位置（X, Y, Z）</div>
+                    <div class="xyz-grid">
+                      <input type="text" class="xyz-input" placeholder="X">
+                      <input type="text" class="xyz-input" placeholder="Y">
+                      <input type="text" class="xyz-input" placeholder="Z">
+                    </div>
+                  </div>
+                  <div class="position-box">
+                    <div class="position-box-title">相对信息</div>
+                    <input type="text" class="form-input" placeholder="相对基准零部件">
+                  </div>
+                </div>
+              </div>
+
+              <div class="position-card">
+                <div class="position-header">
+                  <span class="position-title">安全阀</span>
+                  <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <div class="qty-wrapper">
+                      <span class="qty-label">数量</span>
+                      <input type="number" class="qty-input" value="1" min="0">
+                    </div>
+                    <span class="position-hint">位置信息</span>
+                  </div>
+                </div>
+                <div class="position-grid">
+                  <div class="position-box">
+                    <div class="position-box-title">绝对位置（X, Y, Z）</div>
+                    <div class="xyz-grid">
+                      <input type="text" class="xyz-input" placeholder="X">
+                      <input type="text" class="xyz-input" placeholder="Y">
+                      <input type="text" class="xyz-input" placeholder="Z">
+                    </div>
+                  </div>
+                  <div class="position-box">
+                    <div class="position-box-title">相对信息</div>
+                    <input type="text" class="form-input" placeholder="相对基准零部件">
+                  </div>
+                </div>
+              </div>
+
+              <div class="position-card">
+                <div class="position-header">
+                  <span class="position-title">控制阀</span>
+                  <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <div class="qty-wrapper">
+                      <span class="qty-label">数量</span>
+                      <input type="number" class="qty-input" value="1" min="0">
+                    </div>
+                    <span class="position-hint">位置信息</span>
+                  </div>
+                </div>
+                <div class="position-grid">
+                  <div class="position-box">
+                    <div class="position-box-title">绝对位置（X, Y, Z）</div>
+                    <div class="xyz-grid">
+                      <input type="text" class="xyz-input" placeholder="X">
+                      <input type="text" class="xyz-input" placeholder="Y">
+                      <input type="text" class="xyz-input" placeholder="Z">
+                    </div>
+                  </div>
+                  <div class="position-box">
+                    <div class="position-box-title">相对信息</div>
+                    <input type="text" class="form-input" placeholder="相对基准零部件">
+                  </div>
+                </div>
+              </div>
+
+              <div class="position-card">
+                <div class="position-header">
+                  <span class="position-title">温度计</span>
+                  <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <div class="qty-wrapper">
+                      <span class="qty-label">数量</span>
+                      <input type="number" class="qty-input" value="1" min="0">
+                    </div>
+                    <span class="position-hint">位置信息</span>
+                  </div>
+                </div>
+                <div class="position-grid">
+                  <div class="position-box">
+                    <div class="position-box-title">绝对位置（X, Y, Z）</div>
+                    <div class="xyz-grid">
+                      <input type="text" class="xyz-input" placeholder="X">
+                      <input type="text" class="xyz-input" placeholder="Y">
+                      <input type="text" class="xyz-input" placeholder="Z">
+                    </div>
+                  </div>
+                  <div class="position-box">
+                    <div class="position-box-title">相对信息</div>
+                    <input type="text" class="form-input" placeholder="相对基准零部件">
+                  </div>
+                </div>
+              </div>
+
+              <div class="position-card">
+                <div class="position-header">
+                  <span class="position-title">压力表</span>
+                  <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <div class="qty-wrapper">
+                      <span class="qty-label">数量</span>
+                      <input type="number" class="qty-input" value="1" min="0">
+                    </div>
+                    <span class="position-hint">位置信息</span>
+                  </div>
+                </div>
+                <div class="position-grid">
+                  <div class="position-box">
+                    <div class="position-box-title">绝对位置（X, Y, Z）</div>
+                    <div class="xyz-grid">
+                      <input type="text" class="xyz-input" placeholder="X">
+                      <input type="text" class="xyz-input" placeholder="Y">
+                      <input type="text" class="xyz-input" placeholder="Z">
+                    </div>
+                  </div>
+                  <div class="position-box">
+                    <div class="position-box-title">相对信息</div>
+                    <input type="text" class="form-input" placeholder="相对基准零部件">
+                  </div>
+                </div>
+              </div>
+
+              <div class="btn-group">
+                <button type="button" class="btn btn-primary" onclick="showToast('部件信息已保存', 'success')">保存（原型）</button>
+                <button type="button" class="btn btn-outline" onclick="showToast('已清空表单', 'info')">清空</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Insulation Page -->
+      <div id="page-insulation" class="page">
+        <div class="card">
+          <div class="card-content">
+            <div class="card-header">
+              <h2 class="card-title">总体设计 · 保温＆外包</h2>
+              <span class="card-subtitle">配置参数</span>
+            </div>
+
+            <div class="section-card">
+              <div class="section-header">
+                <span class="section-dot"></span>
+                <span>保温材料</span>
+              </div>
+              <p class="section-desc">填写保温层材质、厚度、导热系数等信息</p>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">保温材质</label>
+                  <input type="text" class="form-input" placeholder="例如：聚氨酯 / 岩棉 / 真空绝热板…">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">保温厚度</label>
+                  <input type="text" class="form-input" placeholder="例如：50 mm">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">导热系数</label>
+                  <input type="text" class="form-input" placeholder="例如：0.024 W/(m·K)">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">密度</label>
+                  <input type="text" class="form-input" placeholder="例如：40 kg/m³">
+                </div>
+              </div>
+            </div>
+
+            <div class="section-card">
+              <div class="section-header">
+                <span class="section-dot"></span>
+                <span>外包材料</span>
+              </div>
+              <p class="section-desc">填写外护板材质、颜色等信息</p>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">外包材质</label>
+                  <input type="text" class="form-input" placeholder="例如：镀锌钢板 / 铝板 / 不锈钢…">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">外包厚度</label>
+                  <input type="text" class="form-input" placeholder="例如：0.5 mm">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">外包颜色</label>
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <input type="color" value="#ffffff" style="width: 46px; height: 36px; border: none; cursor: pointer; border-radius: 10px;">
+                    <input type="text" class="form-input" style="flex: 1;" placeholder="颜色代码 / RAL编号">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-card">
+              <div class="section-header">
+                <span class="section-dot"></span>
+                <span>附加信息</span>
+              </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">保温方式</label>
+                  <select class="form-select">
+                    <option value="">选择保温方式</option>
+                    <option value="full">整体保温</option>
+                    <option value="partial">局部保温</option>
+                    <option value="none">无保温</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">备注说明</label>
+                  <input type="text" class="form-input" placeholder="其他特殊要求…">
+                </div>
+              </div>
+            </div>
+
+            <div class="btn-group">
+              <button type="button" class="btn btn-primary" onclick="showToast('保温外包信息已保存', 'success')">保存（原型）</button>
+              <button type="button" class="btn btn-outline" onclick="showToast('已清空表单', 'info')">清空</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Protection Page -->
+      <div id="page-protection" class="page">
+        <div class="card">
+          <div class="card-content">
+            <div class="card-header">
+              <h2 class="card-title">总体设计 · 防腐保护</h2>
+              <span class="card-subtitle">工艺参数</span>
+            </div>
+
+            <div class="step-tabs">
+              <button class="step-tab active" onclick="showProtectionStep('pretreat', this)">前处理</button>
+              <button class="step-tab" onclick="showProtectionStep('primer', this)">底漆</button>
+              <button class="step-tab" onclick="showProtectionStep('topcoat', this)">面漆</button>
+            </div>
+
+            <div id="protection-pretreat" class="protection-step">
+              <div class="section-card">
+                <div class="section-header">
+                  <span class="section-dot"></span>
+                  <span>前处理工艺</span>
+                </div>
+                <p class="section-desc">填写表面处理方式、等级等信息</p>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">处理方式</label>
+                    <select class="form-select">
+                      <option value="">选择处理方式</option>
+                      <option value="blast">喷砂/抛丸</option>
+                      <option value="pickle">酸洗</option>
+                      <option value="phosphate">磷化</option>
+                      <option value="other">其他</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">处理等级</label>
+                    <input type="text" class="form-input" placeholder="例如：Sa2.5 / Sa3">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">表面粗糙度</label>
+                    <input type="text" class="form-input" placeholder="例如：40-75 μm">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">清洁度要求</label>
+                    <input type="text" class="form-input" placeholder="例如：ISO 8501-1">
+                  </div>
+                </div>
+              </div>
+              <div class="btn-group">
+                <button type="button" class="btn btn-primary" onclick="document.querySelectorAll('.step-tab')[1].click()">下一步：底漆</button>
+              </div>
+            </div>
+
+            <div id="protection-primer" class="protection-step" style="display: none;">
+              <div class="section-card">
+                <div class="section-header">
+                  <span class="section-dot"></span>
+                  <span>底漆配置</span>
+                </div>
+                <p class="section-desc">填写底漆类型、厚度等信息</p>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">底漆类型</label>
+                    <select class="form-select">
+                      <option value="">选择底漆类型</option>
+                      <option value="epoxy">环氧底漆</option>
+                      <option value="zinc">富锌底漆</option>
+                      <option value="alkyd">醇酸底漆</option>
+                      <option value="other">其他</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">干膜厚度</label>
+                    <input type="text" class="form-input" placeholder="例如：75 μm">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">涂装遍数</label>
+                    <input type="text" class="form-input" placeholder="例如：2 遍">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">品牌型号</label>
+                    <input type="text" class="form-input" placeholder="例如：佐敦 xxx">
+                  </div>
+                </div>
+              </div>
+              <div class="btn-group">
+                <button type="button" class="btn btn-outline" onclick="document.querySelectorAll('.step-tab')[0].click()">返回</button>
+                <button type="button" class="btn btn-primary" onclick="document.querySelectorAll('.step-tab')[2].click()">下一步：面漆</button>
+              </div>
+            </div>
+
+            <div id="protection-topcoat" class="protection-step" style="display: none;">
+              <div class="section-card">
+                <div class="section-header">
+                  <span class="section-dot"></span>
+                  <span>面漆配置</span>
+                </div>
+                <p class="section-desc">填写面漆类型、颜色等信息</p>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">面漆类型</label>
+                    <select class="form-select">
+                      <option value="">选择面漆类型</option>
+                      <option value="polyurethane">聚氨酯面漆</option>
+                      <option value="epoxy">环氧面漆</option>
+                      <option value="acrylic">丙烯酸面漆</option>
+                      <option value="other">其他</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">干膜厚度</label>
+                    <input type="text" class="form-input" placeholder="例如：50 μm">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">面漆颜色</label>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                      <input type="color" value="#ffffff" style="width: 46px; height: 36px; border: none; cursor: pointer; border-radius: 10px;">
+                      <input type="text" class="form-input" style="flex: 1;" placeholder="RAL编号 / 颜色名称">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">涂装遍数</label>
+                    <input type="text" class="form-input" placeholder="例如：2 遍">
+                  </div>
+                </div>
+              </div>
+              <div class="btn-group">
+                <button type="button" class="btn btn-outline" onclick="document.querySelectorAll('.step-tab')[1].click()">返回</button>
+                <button type="button" class="btn btn-primary" onclick="showToast('防腐保护信息已保存', 'success')">保存（原型）</button>
+                <button type="button" class="btn btn-outline" onclick="showToast('已清空表单', 'info')">清空</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quote Page -->
+      <div id="page-quote" class="page">
+        <div class="card">
+          <div class="card-content">
+            <div class="card-header">
+              <h2 class="card-title">总体设计 · 报价总图</h2>
+              <span class="card-subtitle">二维图纸导入与预览</span>
+            </div>
+
+            <div class="section-card">
+              <div class="section-header">
+                <span class="section-dot"></span>
+                <span>二维图纸总览</span>
+              </div>
+              <p class="section-desc">在此导入二维图纸（原型占位），并在右侧预览窗口中展示。</p>
+
+              <div style="display: grid; grid-template-columns: 420px 1fr; gap: 16px;">
+                <div class="upload-area">
+                  <div class="upload-icon">▦</div>
+                  <div class="upload-title">导入图纸窗口</div>
+                  <div class="upload-desc">
+                    点击"选择文件"导入（原型示意）<br>
+                    支持：PDF / PNG / JPG / DWG（占位）
+                  </div>
+                  <input type="file" id="quoteFileInput" accept=".pdf,.png,.jpg,.jpeg,.dwg" style="display: none;" onchange="handleQuoteFile(this)">
+                  <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+                    <button type="button" class="btn btn-primary" onclick="document.getElementById('quoteFileInput').click()">选择文件</button>
+                    <button type="button" class="btn btn-outline" onclick="clearQuoteFile()">清空</button>
+                  </div>
+                  <div style="width: 100%; margin-top: 8px; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--border); background: rgba(255,255,255,0.55); display: flex; justify-content: space-between; font-size: 12px;">
+                    <span id="quoteFileName">未选择文件</span>
+                    <span id="quoteFileSize">—</span>
+                  </div>
+                </div>
+
+                <div class="preview-area" id="quotePreviewArea">
+                  <div class="upload-icon">▦</div>
+                  <div class="upload-title">二维图纸预览窗口</div>
+                  <div class="upload-desc">
+                    暂无图纸内容（原型占位）<br>
+                    导入文件后将在此处显示文件信息/预览占位
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="btn-group">
+              <button type="button" class="btn btn-primary" onclick="showToast('报价总图已保存', 'success')">保存（原型）</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Position Page -->
+      <div id="page-position" class="page">
+        <div class="card">
+          <div class="card-content">
+            <div class="card-header">
+              <h2 class="card-title">布局设计 · 位置信息</h2>
+              <span class="card-subtitle">绝对与相对定位</span>
+            </div>
+
+            <div class="section-card">
+              <div class="section-header">
+                <span class="section-dot"></span>
+                <span>主体定位信息</span>
+              </div>
+              <p class="section-desc">填写主要部件的坐标和相对位置信息</p>
+              
+              <div class="position-card">
+                <div class="position-header">
+                  <span class="position-title">罐体中心</span>
+                  <span class="position-hint">基准坐标点</span>
+                </div>
+                <div class="position-grid">
+                  <div class="position-box">
+                    <div class="position-box-title">绝对位置（X, Y, Z）</div>
+                    <div class="xyz-grid">
+                      <input type="text" class="xyz-input" placeholder="X">
+                      <input type="text" class="xyz-input" placeholder="Y">
+                      <input type="text" class="xyz-input" placeholder="Z">
+                    </div>
+                  </div>
+                  <div class="position-box">
+                    <div class="position-box-title">坐标系说明</div>
+                    <input type="text" class="form-input" placeholder="例如：基于框架原点/ISO角件">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="btn-group">
+              <button type="button" class="btn btn-primary" onclick="showToast('位置信息已保存', 'success')">保存（原型）</button>
+              <button type="button" class="btn btn-outline" onclick="showToast('已清空表单', 'info')">清空</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Check Page -->
+      <div id="page-check" class="page">
+        <div class="card" style="max-width: 980px;">
+          <div class="card-content">
+            <div class="card-header">
+              <h2 class="card-title">布局设计 · 校核信息</h2>
+              <span class="card-subtitle">勾选各项校核是否满足要求（原型示意）</span>
+            </div>
+
+            <div class="section-header" style="margin-bottom: 16px;">
+              <span class="section-dot"></span>
+              <div>
+                <div style="font-weight: 800;">空间与干涉校核</div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">对关键空间与互不干涉进行快速确认。</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <span class="check-item-title">操作空间是否足够</span>
+              <div class="check-item-right">
+                <input type="checkbox" class="checkbox">
+                <span>满足要求</span>
+              </div>
+            </div>
+            <div class="check-item">
+              <span class="check-item-title">外伸距离是否足够</span>
+              <div class="check-item-right">
+                <input type="checkbox" class="checkbox">
+                <span>满足要求</span>
+              </div>
+            </div>
+            <div class="check-item">
+              <span class="check-item-title">内部空间是否满足要求</span>
+              <div class="check-item-right">
+                <input type="checkbox" class="checkbox">
+                <span>满足要求</span>
+              </div>
+            </div>
+            <div class="check-item">
+              <span class="check-item-title">顶部空间是否满足要求</span>
+              <div class="check-item-right">
+                <input type="checkbox" class="checkbox">
+                <span>满足要求</span>
+              </div>
+            </div>
+            <div class="check-item">
+              <span class="check-item-title">底部空间是否满足要求</span>
+              <div class="check-item-right">
+                <input type="checkbox" class="checkbox">
+                <span>满足要求</span>
+              </div>
+            </div>
+            <div class="check-item">
+              <span class="check-item-title">是否满足互不干涉要求</span>
+              <div class="check-item-right">
+                <input type="checkbox" class="checkbox">
+                <span>满足要求</span>
+              </div>
+            </div>
+
+            <div class="btn-group">
+              <button type="button" class="btn btn-primary" onclick="showToast('校核信息已保存', 'success')">保存（原型）</button>
+              <button type="button" class="btn btn-outline" onclick="showToast('已清空表单', 'info')">清空</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Safety Valve Page -->
+      <div id="page-safety" class="page">
+        <div style="padding: 24px;">
+          <div style="margin-bottom: 24px;">
+            <h2 style="font-size: 24px; font-weight: 900; color: var(--text-primary); margin-bottom: 8px;">安全阀选配</h2>
+            <p style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">步骤 1 / 4 - 选择适合您系统的安全阀</p>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <span class="section-dot"></span>
+              <span>分类参数</span>
+            </div>
+            <label class="form-label">二级分类</label>
+            <div class="category-grid">
+              <div class="category-card" onclick="selectCategory(this)">
+                <div class="category-name">3.1 常规安全阀</div>
+                <div class="category-desc">标准应用</div>
+              </div>
+              <div class="category-card" onclick="selectCategory(this)">
+                <div class="category-name">3.2 管路安全阀</div>
+                <div class="category-desc">管道系统</div>
+              </div>
+              <div class="category-card" onclick="selectCategory(this)">
+                <div class="category-name">3.3 真空阀</div>
+                <div class="category-desc">真空环境</div>
+              </div>
+              <div class="category-card" onclick="selectCategory(this)">
+                <div class="category-name">3.4 内置式安全阀</div>
+                <div class="category-desc">内置安装</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <span class="section-dot"></span>
+              <span>核心参数</span>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">设计温度最高值 (°C)</label>
+                <input type="number" class="form-input" placeholder="例如: 180">
+              </div>
+              <div class="form-group">
+                <label class="form-label">设计温度最低值 (°C)</label>
+                <input type="number" class="form-input" placeholder="例如: -20">
+              </div>
+              <div class="form-group">
+                <label class="form-label">设计压力 (bar)</label>
+                <input type="number" class="form-input" placeholder="例如: 10">
+              </div>
+            </div>
+            <div class="highlight-box">
+              <div class="form-group" style="margin: 0;">
+                <label class="form-label">设定压力 (bar)</label>
+                <input type="number" class="form-input" placeholder="例如: 8" style="border-color: rgba(234,179,8,0.5);">
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <span class="section-dot"></span>
+              <span>偏好与特殊要求</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">品牌偏好</label>
+              <select class="form-select">
+                <option value="">请选择品牌</option>
+                <option value="品牌1">品牌1</option>
+                <option value="品牌2">品牌2</option>
+                <option value="品牌3">品牌3</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-top: 16px;">
+              <label class="form-label">其他特殊要求</label>
+              <textarea class="form-textarea" placeholder="请输入特殊要求..."></textarea>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <span class="section-dot"></span>
+              <span>推荐型号</span>
+            </div>
+            <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;">基于您输入的参数筛选出的推荐型号：</p>
+            <div class="rec-grid">
+              <div class="rec-card">
+                <div class="rec-title">型号1</div>
+                <div class="rec-specs">
+                  <div class="rec-spec"><span class="rec-spec-label">适用压力</span><span class="rec-spec-value">5-40 bar</span></div>
+                  <div class="rec-spec"><span class="rec-spec-label">温度范围</span><span class="rec-spec-value">-20°C ~ 180°C</span></div>
+                  <div class="rec-spec"><span class="rec-spec-label">材质</span><span class="rec-spec-value">不锈钢</span></div>
+                </div>
+                <div class="rec-actions">
+                  <button class="btn btn-outline" onclick="alert('查看产品详情: SV-001')">查看详情</button>
+                  <button class="btn btn-primary" onclick="showToast('已选择: 型号1', 'success')">选择</button>
+                </div>
+              </div>
+              <div class="rec-card">
+                <div class="rec-title">型号2</div>
+                <div class="rec-specs">
+                  <div class="rec-spec"><span class="rec-spec-label">适用压力</span><span class="rec-spec-value">10-80 bar</span></div>
+                  <div class="rec-spec"><span class="rec-spec-label">温度范围</span><span class="rec-spec-value">-40°C ~ 220°C</span></div>
+                  <div class="rec-spec"><span class="rec-spec-label">材质</span><span class="rec-spec-value">双相不锈钢</span></div>
+                </div>
+                <div class="rec-actions">
+                  <button class="btn btn-outline" onclick="alert('查看产品详情: SV-002')">查看详情</button>
+                  <button class="btn btn-primary" onclick="showToast('已选择: 型号2', 'success')">选择</button>
+                </div>
+              </div>
+              <div class="rec-card">
+                <div class="rec-title">型号3</div>
+                <div class="rec-specs">
+                  <div class="rec-spec"><span class="rec-spec-label">适用压力</span><span class="rec-spec-value">3-25 bar</span></div>
+                  <div class="rec-spec"><span class="rec-spec-label">温度范围</span><span class="rec-spec-value">-10°C ~ 150°C</span></div>
+                  <div class="rec-spec"><span class="rec-spec-label">材质</span><span class="rec-spec-value">不锈钢</span></div>
+                </div>
+                <div class="rec-actions">
+                  <button class="btn btn-outline" onclick="alert('查看产品详情: SV-003')">查看详情</button>
+                  <button class="btn btn-primary" onclick="showToast('已选择: 型号3', 'success')">选择</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="btn-group" style="justify-content: flex-end;">
+            <button class="btn btn-accent" onclick="showPage('control')">下一步 →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Control Valve Page -->
+      <div id="page-control" class="page">
+        <div style="padding: 24px;">
+          <div style="margin-bottom: 24px;">
+            <h2 style="font-size: 24px; font-weight: 900; color: var(--text-primary); margin-bottom: 8px;">控制阀选配</h2>
+            <p style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">步骤 2 / 4 - 选择适合您系统的控制阀</p>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <span class="section-dot"></span>
+              <span>分类参数</span>
+            </div>
+            <label class="form-label">一级分类</label>
+            <div class="category-grid">
+              <div class="category-card" onclick="selectCategory(this)">
+                <div class="category-name">4. 球阀</div>
+              </div>
+              <div class="category-card" onclick="selectCategory(this)">
+                <div class="category-name">5. 蝶阀</div>
+              </div>
+              <div class="category-card" onclick="selectCategory(this)">
+                <div class="category-name">6. 底阀</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <span class="section-dot"></span>
+              <span>核心参数</span>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">设计温度最高值 (°C)</label>
+                <input type="number" class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label">设计温度最低值 (°C)</label>
+                <input type="number" class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label">设计压力 (bar)</label>
+                <input type="number" class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label">手柄型式</label>
+                <select class="form-select">
+                  <option value="">请选择</option>
+                  <option value="手动">手动</option>
+                  <option value="气动">气动</option>
+                  <option value="电动">电动</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <span class="section-dot"></span>
+              <span>推荐型号</span>
+            </div>
+            <div class="rec-grid">
+              <div class="rec-card">
+                <div class="rec-title">球阀型号1</div>
+                <div class="rec-specs">
+                  <div class="rec-spec"><span class="rec-spec-label">适用压力</span><span class="rec-spec-value">5-50 bar</span></div>
+                  <div class="rec-spec"><span class="rec-spec-label">温度范围</span><span class="rec-spec-value">-20°C ~ 200°C</span></div>
+                </div>
+                <div class="rec-actions">
+                  <button class="btn btn-outline">查看详情</button>
+                  <button class="btn btn-primary" onclick="showToast('已选择: 球阀型号1', 'success')">选择</button>
+                </div>
+              </div>
+              <div class="rec-card">
+                <div class="rec-title">蝶阀型号1</div>
+                <div class="rec-specs">
+                  <div class="rec-spec"><span class="rec-spec-label">适用压力</span><span class="rec-spec-value">3-40 bar</span></div>
+                  <div class="rec-spec"><span class="rec-spec-label">温度范围</span><span class="rec-spec-value">-10°C ~ 180°C</span></div>
+                </div>
+                <div class="rec-actions">
+                  <button class="btn btn-outline">查看详情</button>
+                  <button class="btn btn-primary" onclick="showToast('已选择: 蝶阀型号1', 'success')">选择</button>
+                </div>
+              </div>
+              <div class="rec-card">
+                <div class="rec-title">底阀型号1</div>
+                <div class="rec-specs">
+                  <div class="rec-spec"><span class="rec-spec-label">适用压力</span><span class="rec-spec-value">5-60 bar</span></div>
+                  <div class="rec-spec"><span class="rec-spec-label">温度范围</span><span class="rec-spec-value">-20°C ~ 220°C</span></div>
+                </div>
+                <div class="rec-actions">
+                  <button class="btn btn-outline">查看详情</button>
+                  <button class="btn btn-primary" onclick="showToast('已选择: 底阀型号1', 'success')">选择</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="btn-group" style="justify-content: flex-end;">
+            <button class="btn btn-outline" onclick="showPage('safety')">← 上一步</button>
+            <button class="btn btn-accent" onclick="showPage('flange')">下一步 →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flange Page -->
+      <div id="page-flange" class="page">
+        <div style="padding: 24px;">
+          <div style="margin-bottom: 24px;">
+            <h2 style="font-size: 24px; font-weight: 900; color: var(--text-primary); margin-bottom: 8px;">凸缘选配</h2>
+            <p style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">步骤 3 / 4 - 基于已选安全阀和控制阀配置凸缘</p>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <span class="section-dot"></span>
+              <span>已选型号信息</span>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">安全阀型号</label>
+                <input type="text" class="form-input" value="待选择" readonly style="background: #f3f4f6;">
+              </div>
+              <div class="form-group">
+                <label class="form-label">控制阀型号</label>
+                <input type="text" class="form-input" value="待选择" readonly style="background: #f3f4f6;">
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <span class="section-dot"></span>
+              <span>设计参数</span>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">设计温度最高值 (°C)</label>
+                <input type="number" class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label">设计温度最低值 (°C)</label>
+                <input type="number" class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label">设计压力 (bar)</label>
+                <input type="number" class="form-input">
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <span class="section-dot"></span>
+              <span>安装参数</span>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">安装方式</label>
+                <select class="form-select">
+                  <option value="">请选择</option>
+                  <option value="顶部安装">顶部安装</option>
+                  <option value="侧面安装">侧面安装</option>
+                  <option value="底部安装">底部安装</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">角度要求 (°)</label>
+                <input type="number" class="form-input" placeholder="0-360">
+              </div>
+              <div class="form-group">
+                <label class="form-label">厚度 (mm)</label>
+                <input type="number" class="form-input">
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <span class="section-dot"></span>
+              <span>推荐型号</span>
+            </div>
+            <div class="rec-grid">
+              <div class="rec-card">
+                <div class="rec-title">凸缘型号1</div>
+                <div class="rec-specs">
+                  <div class="rec-spec"><span class="rec-spec-label">适用压力</span><span class="rec-spec-value">5-50 bar</span></div>
+                  <div class="rec-spec"><span class="rec-spec-label">温度范围</span><span class="rec-spec-value">-20°C ~ 200°C</span></div>
+                  <div class="rec-spec"><span class="rec-spec-label">厚度</span><span class="rec-spec-value">10mm</span></div>
+                </div>
+                <div class="rec-actions">
+                  <button class="btn btn-outline">查看详情</button>
+                  <button class="btn btn-primary" onclick="showToast('已选择: 凸缘型号1', 'success')">选择</button>
+                </div>
+              </div>
+              <div class="rec-card">
+                <div class="rec-title">凸缘型号2</div>
+                <div class="rec-specs">
+                  <div class="rec-spec"><span class="rec-spec-label">适用压力</span><span class="rec-spec-value">10-80 bar</span></div>
+                  <div class="rec-spec"><span class="rec-spec-label">温度范围</span><span class="rec-spec-value">-40°C ~ 250°C</span></div>
+                  <div class="rec-spec"><span class="rec-spec-label">厚度</span><span class="rec-spec-value">15mm</span></div>
+                </div>
+                <div class="rec-actions">
+                  <button class="btn btn-outline">查看详情</button>
+                  <button class="btn btn-primary" onclick="showToast('已选择: 凸缘型号2', 'success')">选择</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="btn-group" style="justify-content: flex-end;">
+            <button class="btn btn-outline" onclick="showPage('control')">← 上一步</button>
+            <button class="btn btn-accent" onclick="showPage('maintenance')">下一步 →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Maintenance Page -->
+      <div id="page-maintenance" class="page">
+        <div style="padding: 24px;">
+          <div style="margin-bottom: 24px;">
+            <h2 style="font-size: 24px; font-weight: 900; color: var(--text-primary); margin-bottom: 8px;">维护清洗功能配置</h2>
+            <p style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">步骤 4 / 4 - 最后一步，配置维护和清洗功能</p>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <span class="section-dot"></span>
+              <span>分类选择</span>
+            </div>
+            <label class="form-label">一级分类</label>
+            <div class="category-grid">
+              <div class="category-card" onclick="selectCategory(this)">
+                <div class="category-name">2.1 快开人孔组件</div>
+              </div>
+              <div class="category-card" onclick="selectCategory(this)">
+                <div class="category-name">2.2 法兰人孔组件</div>
+              </div>
+              <div class="category-card" onclick="selectCategory(this)">
+                <div class="category-name">2.3 快开清洁口组件</div>
+              </div>
+              <div class="category-card" onclick="selectCategory(this)">
+                <div class="category-name">2.4 法兰清洁口组件</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <span class="section-dot"></span>
+              <span>基本参数</span>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">设计压力 (bar)</label>
+                <input type="number" class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label">内径 (mm)</label>
+                <input type="number" class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label">外径 (mm)</label>
+                <input type="number" class="form-input">
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <span class="section-dot"></span>
+              <span>安装参数</span>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">安装角度 (°)</label>
+                <input type="number" class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label">法兰厚度 (mm)</label>
+                <input type="number" class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label">打开角度 (°)</label>
+                <input type="number" class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label">方向</label>
+                <select class="form-select">
+                  <option value="">请选择</option>
+                  <option value="顺时针">顺时针</option>
+                  <option value="逆时针">逆时针</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <span class="section-dot"></span>
+              <span>附加选项</span>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">螺母类型</label>
+                <select class="form-select">
+                  <option value="">请选择</option>
+                  <option value="标准螺母">标准螺母</option>
+                  <option value="六角螺母">六角螺母</option>
+                  <option value="蝶形螺母">蝶形螺母</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">海关插销</label>
+                <select class="form-select">
+                  <option value="">请选择</option>
+                  <option value="需要">需要</option>
+                  <option value="不需要">不需要</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">颈圈曲率半径 (mm)</label>
+                <input type="number" class="form-input">
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <span class="section-dot"></span>
+              <span>推荐型号</span>
+            </div>
+            <div class="rec-grid">
+              <div class="rec-card">
+                <div class="rec-title">快开人孔组件A</div>
+                <div class="rec-specs">
+                  <div class="rec-spec"><span class="rec-spec-label">适用压力</span><span class="rec-spec-value">3-30 bar</span></div>
+                  <div class="rec-spec"><span class="rec-spec-label">直径</span><span class="rec-spec-value">400mm</span></div>
+                </div>
+                <div class="rec-actions">
+                  <button class="btn btn-outline">查看详情</button>
+                  <button class="btn btn-primary" onclick="showToast('已选择: 快开人孔组件A', 'success')">选择</button>
+                </div>
+              </div>
+              <div class="rec-card">
+                <div class="rec-title">法兰人孔组件B</div>
+                <div class="rec-specs">
+                  <div class="rec-spec"><span class="rec-spec-label">适用压力</span><span class="rec-spec-value">5-50 bar</span></div>
+                  <div class="rec-spec"><span class="rec-spec-label">直径</span><span class="rec-spec-value">500mm</span></div>
+                </div>
+                <div class="rec-actions">
+                  <button class="btn btn-outline">查看详情</button>
+                  <button class="btn btn-primary" onclick="showToast('已选择: 法兰人孔组件B', 'success')">选择</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="btn-group" style="justify-content: flex-end;">
+            <button class="btn btn-outline" onclick="showPage('flange')">← 上一步</button>
+            <button class="btn btn-accent" onclick="finishConfig()">开始咨询</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Verification Basic Page -->
+      <div id="page-verify-basic" class="page">
+        <div class="card">
+          <div class="card-content">
+            <div class="card-header">
+              <h2 class="card-title">阀组件设计校核 · 基础信息核对</h2>
+              <span class="card-subtitle">步骤 1/5 - 零件号检索与一致性确认</span>
+            </div>
+
+            <div class="section-card">
+              <div class="section-header">
+                <span class="section-dot"></span>
+                <span>零件号检索</span>
+              </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">零件号</label>
+                  <input type="text" class="form-input" placeholder="输入零件号进行检索">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">零件名称</label>
+                  <input type="text" class="form-input" placeholder="自动填充" readonly style="background: #f3f4f6;">
+                </div>
+              </div>
+              <div class="btn-group" style="margin-top: 16px;">
+                <button class="btn btn-primary" onclick="showToast('检索完成（原型）', 'success')">检索</button>
+              </div>
+            </div>
+
+            <div class="section-card">
+              <div class="section-header">
+                <span class="section-dot"></span>
+                <span>一致性校核结果</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div class="verify-header">
+                  <div class="verify-icon">📋</div>
+                  <span class="verify-title">零件号一致性</span>
+                  <span class="verify-badge badge-pass">通过</span>
+                </div>
+                <div class="verify-header">
+                  <div class="verify-icon">📐</div>
+                  <span class="verify-title">规格参数一致性</span>
+                  <span class="verify-badge badge-pending">待确认</span>
+                </div>
+                <div class="verify-header">
+                  <div class="verify-icon">🔧</div>
+                  <span class="verify-title">材质匹配</span>
+                  <span class="verify-badge badge-pass">通过</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="btn-group" style="justify-content: flex-end;">
+              <button class="btn btn-primary" onclick="showToast('基础信息已确认', 'success')">确认</button>
+              <button class="btn btn-accent" onclick="showPage('verify-position')">下一步 →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Verification Position Page -->
+      <div id="page-verify-position" class="page">
+        <div class="card">
+          <div class="card-content">
+            <div class="card-header">
+              <h2 class="card-title">阀组件设计校核 · 定位属性确认</h2>
+              <span class="card-subtitle">步骤 2/5 - 阀门定位属性校核</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div class="section-card">
+                <div class="section-header">
+                  <span class="section-dot"></span>
+                  <span>定位属性</span>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">安装角度 (°)</label>
+                  <input type="number" class="form-input" placeholder="0-360">
+                </div>
+                <div class="form-group" style="margin-top: 12px;">
+                  <label class="form-label">法兰厚度 (mm)</label>
+                  <input type="number" class="form-input">
+                </div>
+                <div class="form-group" style="margin-top: 12px;">
+                  <label class="form-label">安装高度 (mm)</label>
+                  <input type="number" class="form-input">
+                </div>
+              </div>
+
+              <div class="preview-area" style="min-height: 250px;">
+                <div class="upload-icon">🔧</div>
+                <div class="upload-title">阀门校核示意图</div>
+                <div class="upload-desc">3D定位预览（原型占位）</div>
+              </div>
+            </div>
+
+            <div class="btn-group" style="justify-content: flex-end;">
+              <button class="btn btn-outline" onclick="showPage('verify-basic')">← 上一步</button>
+              <button class="btn btn-primary" onclick="showToast('定位属性已确认', 'success')">确认</button>
+              <button class="btn btn-accent" onclick="showPage('verify-procurement')">下一步 →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Verification Procurement Page -->
+      <div id="page-verify-procurement" class="page">
+        <div class="card">
+          <div class="card-content">
+            <div class="card-header">
+              <h2 class="card-title">阀组件设计校核 · 采购信息传递</h2>
+              <span class="card-subtitle">步骤 3/5 - PLM/SAP数据传递</span>
+            </div>
+
+            <div class="section-card">
+              <div class="section-header">
+                <span class="section-dot"></span>
+                <span>数据传递状态</span>
+              </div>
+              
+              <div style="margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                  <span style="font-weight: 700;">PLM系统同步</span>
+                  <span style="font-weight: 700; color: var(--accent);">75%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 75%;"></div>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                  <span style="font-weight: 700;">SAP系统同步</span>
+                  <span style="font-weight: 700; color: var(--accent);">50%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 50%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-card">
+              <div class="section-header">
+                <span class="section-dot"></span>
+                <span>采购清单预览</span>
+              </div>
+              <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                <thead>
+                  <tr style="background: var(--accent-light);">
+                    <th style="padding: 12px; text-align: left; font-weight: 800;">零件号</th>
+                    <th style="padding: 12px; text-align: left; font-weight: 800;">名称</th>
+                    <th style="padding: 12px; text-align: left; font-weight: 800;">数量</th>
+                    <th style="padding: 12px; text-align: left; font-weight: 800;">状态</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style="border-bottom: 1px solid var(--border);">
+                    <td style="padding: 12px;">SV-001</td>
+                    <td style="padding: 12px;">安全阀</td>
+                    <td style="padding: 12px;">2</td>
+                    <td style="padding: 12px;"><span class="verify-badge badge-pass">已同步</span></td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid var(--border);">
+                    <td style="padding: 12px;">CV-001</td>
+                    <td style="padding: 12px;">控制阀</td>
+                    <td style="padding: 12px;">4</td>
+                    <td style="padding: 12px;"><span class="verify-badge badge-pending">同步中</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="btn-group" style="justify-content: flex-end;">
+              <button class="btn btn-outline" onclick="showPage('verify-position')">← 上一步</button>
+              <button class="btn btn-primary" onclick="showToast('采购信息已传递', 'success')">传递数据</button>
+              <button class="btn btn-accent" onclick="showPage('verify-drawing')">下一步 →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Verification Drawing Page -->
+      <div id="page-verify-drawing" class="page">
+        <div class="card">
+          <div class="card-content">
+            <div class="card-header">
+              <h2 class="card-title">阀组件设计校核 · 部件图配置</h2>
+              <span class="card-subtitle">步骤 4/5 - 模型装配与工程图</span>
+            </div>
+
+            <div class="section-card">
+              <div class="section-header">
+                <span class="section-dot"></span>
+                <span>模型装配流程</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div class="verify-header">
+                  <div class="verify-icon">📦</div>
+                  <span class="verify-title">模型导入</span>
+                  <span class="verify-badge badge-pass">完成</span>
+                </div>
+                <div class="verify-header">
+                  <div class="verify-icon">🔗</div>
+                  <span class="verify-title">零件装配</span>
+                  <span class="verify-badge badge-pass">完成</span>
+                </div>
+                <div class="verify-header">
+                  <div class="verify-icon">📐</div>
+                  <span class="verify-title">工程图生成</span>
+                  <span class="verify-badge badge-pending">待生成</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="preview-area" style="min-height: 300px;">
+              <div class="upload-icon">📐</div>
+              <div class="upload-title">工程图预览区</div>
+              <div class="upload-desc">点击生成后在此预览工程图（原型占位）</div>
+            </div>
+
+            <div class="btn-group" style="justify-content: flex-end;">
+              <button class="btn btn-outline" onclick="showPage('verify-procurement')">← 上一步</button>
+              <button class="btn btn-primary" onclick="showToast('工程图已生成', 'success')">生成工程图</button>
+              <button class="btn btn-accent" onclick="showPage('verify-memo')">下一步 →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Verification Memo Page -->
+      <div id="page-verify-memo" class="page">
+        <div class="card">
+          <div class="card-content">
+            <div class="card-header">
+              <h2 class="card-title">阀组件设计校核 · 订单备注模板</h2>
+              <span class="card-subtitle">步骤 5/5 - 技术要点与风险提示</span>
+            </div>
+
+            <div class="section-card">
+              <div class="section-header">
+                <span class="section-dot"></span>
+                <span>技术要点</span>
+              </div>
+              <textarea class="form-textarea" style="min-height: 100px;" placeholder="输入技术要点说明..."></textarea>
+            </div>
+
+            <div class="section-card">
+              <div class="section-header">
+                <span class="section-dot"></span>
+                <span>工艺要求</span>
+              </div>
+              <textarea class="form-textarea" style="min-height: 100px;" placeholder="输入工艺要求说明..."></textarea>
+            </div>
+
+            <div class="section-card">
+              <div class="section-header">
+                <span class="section-dot"></span>
+                <span>风险提示</span>
+              </div>
+              <textarea class="form-textarea" style="min-height: 100px;" placeholder="输入风险提示说明..."></textarea>
+            </div>
+
+            <div class="btn-group" style="justify-content: flex-end;">
+              <button class="btn btn-outline" onclick="showPage('verify-drawing')">← 上一步</button>
+              <button class="btn btn-primary" onclick="showToast('订单备注已保存', 'success')">保存备注</button>
+              <button class="btn btn-accent" onclick="showToast('校核流程已完成！', 'success'); showPage('home');">完成校核</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Parts Library Page -->
+      <div id="page-parts-library" class="page">
+        <div class="card">
+          <div class="card-content">
+            <div class="card-header">
+              <h2 class="card-title">零部件库</h2>
+              <div style="display: flex; gap: 12px; align-items: center;">
+                <div style="position: relative;">
+                  <input type="text" class="form-input" style="padding-left: 36px; width: 200px;" placeholder="搜索零部件...">
+                  <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);">🔍</span>
+                </div>
+                <button class="btn btn-primary" onclick="showToast('添加零部件功能（原型占位）', 'info')">+ 添加零部件</button>
+              </div>
+            </div>
+
+            <div class="parts-grid">
+              <div class="parts-category">
+                <div class="parts-category-header">
+                  <div class="parts-icon">📦</div>
+                  <div class="parts-info">
+                    <div class="parts-title-row">
+                      <span class="parts-title">标准件</span>
+                      <span class="parts-count">128</span>
+                    </div>
+                    <p class="parts-desc">ISO/GB标准零部件</p>
+                  </div>
+                </div>
+              </div>
+              <div class="parts-category">
+                <div class="parts-category-header">
+                  <div class="parts-icon">🔧</div>
+                  <div class="parts-info">
+                    <div class="parts-title-row">
+                      <span class="parts-title">阀门类</span>
+                      <span class="parts-count">45</span>
+                    </div>
+                    <p class="parts-desc">安全阀/控制阀/截止阀等</p>
+                  </div>
+                </div>
+              </div>
+              <div class="parts-category">
+                <div class="parts-category-header">
+                  <div class="parts-icon">⚙️</div>
+                  <div class="parts-info">
+                    <div class="parts-title-row">
+                      <span class="parts-title">法兰类</span>
+                      <span class="parts-count">32</span>
+                    </div>
+                    <p class="parts-desc">各类法兰接口</p>
+                  </div>
+                </div>
+              </div>
+              <div class="parts-category">
+                <div class="parts-category-header">
+                  <div class="parts-icon">🔗</div>
+                  <div class="parts-info">
+                    <div class="parts-title-row">
+                      <span class="parts-title">管路类</span>
+                      <span class="parts-count">56</span>
+                    </div>
+                    <p class="parts-desc">管道/接头/弯头等</p>
+                  </div>
+                </div>
+              </div>
+              <div class="parts-category">
+                <div class="parts-category-header">
+                  <div class="parts-icon">🏗️</div>
+                  <div class="parts-info">
+                    <div class="parts-title-row">
+                      <span class="parts-title">框架类</span>
+                      <span class="parts-count">24</span>
+                    </div>
+                    <p class="parts-desc">角件/梁/支座等</p>
+                  </div>
+                </div>
+              </div>
+              <div class="parts-category">
+                <div class="parts-category-header">
+                  <div class="parts-icon">✏️</div>
+                  <div class="parts-info">
+                    <div class="parts-title-row">
+                      <span class="parts-title">自定义件</span>
+                      <span class="parts-count">18</span>
+                    </div>
+                    <p class="parts-desc">用户自定义零部件</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="empty-state" style="margin-top: 24px;">
+              <div class="empty-icon">📦</div>
+              <h3 class="empty-title">零部件列表</h3>
+              <p class="empty-desc">
+                选择上方分类查看零部件详情（原型占位）<br>
+                后续可接入3D预览、参数表、BOM导出等功能
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Valve Design Page -->
+      <div id="page-valve-design" class="page">
+        <div class="card">
+          <div class="card-content">
+            <div class="card-header">
+              <h2 class="card-title">阀组件设计</h2>
+              <span class="card-subtitle">阀门/管路/接口设计</span>
+            </div>
+
+            <div class="design-grid">
+              <div class="design-module">
+                <div class="design-icon">🔧</div>
+                <div class="design-title">阀门配置</div>
+                <p class="design-desc">安全阀/控制阀/截止阀组合设计</p>
+              </div>
+              <div class="design-module">
+                <div class="design-icon">🔗</div>
+                <div class="design-title">管路设计</div>
+                <p class="design-desc">管道路径/连接方式/流向规划</p>
+              </div>
+              <div class="design-module">
+                <div class="design-icon">⭕</div>
+                <div class="design-title">接口定义</div>
+                <p class="design-desc">法兰接口/快接头/焊接口规格</p>
+              </div>
+            </div>
+
+            <div class="preview-area">
+              <div class="empty-icon">🔧</div>
+              <h3 class="empty-title">阀组件设计工作区</h3>
+              <p class="empty-desc">
+                此处为阀组件可视化设计区域（原型占位）<br>
+                后续可接入2D/3D编辑器、拖拽布局、参数化设计等功能
+              </p>
+            </div>
+
+            <div class="btn-group">
+              <button class="btn btn-primary" onclick="showToast('阀组件设计已保存', 'success')">保存设计（原型）</button>
+              <button class="btn btn-outline">导出BOM</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const breadcrumbMap = {
+      'home': '首页',
+      'spec': '总体设计 > 设计规范',
+      'frame': '总体设计 > 框架',
+      'tank': '总体设计 > 罐体',
+      'parts': '总体设计 > 部件',
+      'insulation': '总体设计 > 保温＆外包',
+      'protection': '总体设计 > 防腐保护',
+      'quote': '总体设计 > 报价总图',
+      'position': '布局设计 > 位置信息',
+      'check': '布局设计 > 校核信息',
+      'safety': '选配设计 > 安全阀选配',
+      'control': '选配设计 > 控制阀选配',
+      'flange': '选配设计 > 凸缘选配',
+      'maintenance': '选配设计 > 维护清洗功能',
+      'verify-basic': '设计校核 > 基础信息核对',
+      'verify-position': '设计校核 > 定位属性确认',
+      'verify-procurement': '设计校核 > 采购信息传递',
+      'verify-drawing': '设计校核 > 部件图配置',
+      'verify-memo': '设计校核 > 订单备注模板',
+      'parts-library': '零部件库',
+      'valve-design': '阀组件设计'
+    };
+
+    function showPage(pageId) {
+      // Hide all pages
+      document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+      });
+      
+      // Show selected page
+      const page = document.getElementById('page-' + pageId);
+      if (page) {
+        page.classList.add('active');
+      }
+      
+      // Update breadcrumb
+      document.getElementById('breadcrumb').textContent = breadcrumbMap[pageId] || pageId;
+      
+      // Update active nav item
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+    }
+
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast ' + type;
+      setTimeout(() => toast.classList.add('show'), 10);
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function selectCategory(element) {
+      const parent = element.parentElement;
+      parent.querySelectorAll('.category-card').forEach(card => {
+        card.classList.remove('selected');
+      });
+      element.classList.add('selected');
+    }
+
+    function showProtectionStep(step, btn) {
+      document.querySelectorAll('.protection-step').forEach(s => s.style.display = 'none');
+      document.getElementById('protection-' + step).style.display = 'block';
+      
+      document.querySelectorAll('.step-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function handleQuoteFile(input) {
+      const file = input.files[0];
+      if (file) {
+        document.getElementById('quoteFileName').textContent = file.name;
+        document.getElementById('quoteFileSize').textContent = (file.size / 1024).toFixed(1) + ' KB';
+        document.getElementById('quotePreviewArea').innerHTML = `
+          <div class="upload-icon">✓</div>
+          <div class="upload-title">已导入图纸</div>
+          <div class="upload-desc">
+            文件名：${file.name}<br>
+            （原型：未接入真实渲染，仅展示文件信息）
+          </div>
+        `;
+        showToast('已选择文件：' + file.name, 'success');
+      }
+    }
+
+    function clearQuoteFile() {
+      document.getElementById('quoteFileInput').value = '';
+      document.getElementById('quoteFileName').textContent = '未选择文件';
+      document.getElementById('quoteFileSize').textContent = '—';
+      document.getElementById('quotePreviewArea').innerHTML = `
+        <div class="upload-icon">▦</div>
+        <div class="upload-title">二维图纸预览窗口</div>
+        <div class="upload-desc">
+          暂无图纸内容（原型占位）<br>
+          导入文件后将在此处显示文件信息/预览占位
+        </div>
+      `;
+      showToast('已清空', 'info');
+    }
+
+    function finishConfig() {
+      showToast('配置已完成！', 'success');
+      alert('配置完成！\n\n感谢使用阀门选型配置器！我们将根据您的选择为您提供详细的技术方案和报价。');
+    }
+
+    // Initialize
+    showPage('home');
+  </script>
+</body>
+</html>
