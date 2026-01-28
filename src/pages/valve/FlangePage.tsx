@@ -1,0 +1,132 @@
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import FormCard from "@/components/valve/FormCard";
+import FormInput from "@/components/valve/FormInput";
+import FormSelect from "@/components/valve/FormSelect";
+import FormTextarea from "@/components/valve/FormTextarea";
+import RecommendationCard from "@/components/valve/RecommendationCard";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+
+const recommendations = [
+  {
+    id: "FL-001",
+    name: "凸缘型号1",
+    specs: [
+      { label: "适用压力", value: "5-50 bar" },
+      { label: "温度范围", value: "-20°C ~ 200°C" },
+      { label: "厚度", value: "10mm" },
+    ],
+  },
+  {
+    id: "FL-002",
+    name: "凸缘型号2",
+    specs: [
+      { label: "适用压力", value: "10-80 bar" },
+      { label: "温度范围", value: "-40°C ~ 250°C" },
+      { label: "厚度", value: "15mm" },
+    ],
+  },
+];
+
+const installOptions = [
+  { value: "顶部安装", label: "顶部安装" },
+  { value: "侧面安装", label: "侧面安装" },
+  { value: "底部安装", label: "底部安装" },
+];
+
+const FlangePage: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleModelSelect = (model: string) => {
+    toast.success(`已选择: ${model}`);
+  };
+
+  return (
+    <div className="p-6">
+      <div className="mb-6">
+        <h2 className="text-2xl font-black tracking-wide text-foreground/90 mb-2">
+          凸缘选配
+        </h2>
+        <p className="text-[13px] font-semibold text-foreground/55">
+          步骤 3 / 4 - 基于已选安全阀和控制阀配置凸缘
+        </p>
+      </div>
+
+      <FormCard title="已选型号信息">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
+          <div>
+            <label className="block mb-2 text-[13px] font-semibold text-foreground/80">
+              安全阀型号
+            </label>
+            <input
+              type="text"
+              className="w-full px-3.5 py-2.5 border-2 border-foreground/10 rounded-[10px] text-[13px] font-medium bg-muted"
+              value="待选择"
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-2 text-[13px] font-semibold text-foreground/80">
+              控制阀型号
+            </label>
+            <input
+              type="text"
+              className="w-full px-3.5 py-2.5 border-2 border-foreground/10 rounded-[10px] text-[13px] font-medium bg-muted"
+              value="待选择"
+              readOnly
+            />
+          </div>
+        </div>
+      </FormCard>
+
+      <FormCard title="设计参数">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
+          <FormInput label="设计温度最高值 (°C)" type="number" />
+          <FormInput label="设计温度最低值 (°C)" type="number" />
+          <FormInput label="设计压力 (bar)" type="number" />
+        </div>
+      </FormCard>
+
+      <FormCard title="安装参数">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
+          <FormSelect label="安装方式" options={installOptions} />
+          <FormInput label="角度要求 (°)" type="number" placeholder="0-360" />
+          <FormInput label="厚度 (mm)" type="number" />
+        </div>
+      </FormCard>
+
+      <FormCard title="其他特殊要求">
+        <FormTextarea label="" placeholder="请输入特殊要求..." />
+      </FormCard>
+
+      <FormCard title="推荐型号">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+          {recommendations.map((rec) => (
+            <RecommendationCard
+              key={rec.id}
+              title={rec.name}
+              specs={rec.specs}
+              onViewDetails={() => alert(`查看产品详情: ${rec.id}`)}
+              onSelect={() => handleModelSelect(rec.name)}
+            />
+          ))}
+        </div>
+      </FormCard>
+
+      <div className="flex justify-end gap-3 mt-6">
+        <Button variant="outline" onClick={() => navigate("/option/valve/control")}>
+          ← 上一步
+        </Button>
+        <Button
+          className="bg-gradient-to-r from-accent to-accent/70 hover:shadow-hover"
+          onClick={() => navigate("/option/valve/maintenance")}
+        >
+          下一步 →
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export default FlangePage;
