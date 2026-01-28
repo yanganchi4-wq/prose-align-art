@@ -5,7 +5,25 @@ import MainSidebar from "@/components/layout/MainSidebar";
 import MainTopbar from "@/components/layout/MainTopbar";
 import Dashboard from "@/components/valve/Dashboard";
 import HomePage from "@/pages/HomePage";
-import PlaceholderPage from "@/pages/PlaceholderPage";
+
+// 总体设计
+import SpecPage from "@/pages/overall/SpecPage";
+import FramePage from "@/pages/overall/FramePage";
+import TankPage from "@/pages/overall/TankPage";
+import PartsPage from "@/pages/overall/PartsPage";
+import InsulationPage from "@/pages/overall/InsulationPage";
+import ProtectionPage from "@/pages/overall/ProtectionPage";
+import QuotePage from "@/pages/overall/QuotePage";
+
+// 布局设计
+import PositionPage from "@/pages/layout/PositionPage";
+import CheckPage from "@/pages/layout/CheckPage";
+
+// 其他页面
+import PartsLibraryPage from "@/pages/PartsLibraryPage";
+import ValveDesignPage from "@/pages/ValveDesignPage";
+
+// 选配设计 - 阀门选型配置器
 import SafetyValvePage from "@/pages/valve/SafetyValvePage";
 import ControlValvePage from "@/pages/valve/ControlValvePage";
 import FlangePage from "@/pages/valve/FlangePage";
@@ -44,20 +62,20 @@ const Index = () => {
           <Route path="/" element={<HomePage />} />
           
           {/* 总体设计 */}
-          <Route path="/overall/spec" element={<PlaceholderPage title="设计规范" subtitle="总体设计 - 参数录入" />} />
-          <Route path="/overall/frame" element={<PlaceholderPage title="框架" subtitle="总体设计 - 框架配置" />} />
-          <Route path="/overall/tank" element={<PlaceholderPage title="罐体" subtitle="总体设计 - 罐体设计" />} />
-          <Route path="/overall/parts" element={<PlaceholderPage title="部件" subtitle="总体设计 - 部件管理" />} />
-          <Route path="/overall/insulation" element={<PlaceholderPage title="保温＆外包" subtitle="总体设计 - 保温外包配置" />} />
-          <Route path="/overall/protection" element={<PlaceholderPage title="防腐保护" subtitle="总体设计 - 防腐保护设计" />} />
-          <Route path="/overall/quote" element={<PlaceholderPage title="报价总图" subtitle="总体设计 - 二维图纸" />} />
+          <Route path="/overall/spec" element={<SpecPage />} />
+          <Route path="/overall/frame" element={<FramePage />} />
+          <Route path="/overall/tank" element={<TankPage />} />
+          <Route path="/overall/parts" element={<PartsPage />} />
+          <Route path="/overall/insulation" element={<InsulationPage />} />
+          <Route path="/overall/protection" element={<ProtectionPage />} />
+          <Route path="/overall/quote" element={<QuotePage />} />
           
           {/* 布局设计 */}
-          <Route path="/layout/position" element={<PlaceholderPage title="位置信息" subtitle="布局设计 - 部件位置配置" />} />
-          <Route path="/layout/check" element={<PlaceholderPage title="校核信息" subtitle="布局设计 - 空间校核" />} />
+          <Route path="/layout/position" element={<PositionPage />} />
+          <Route path="/layout/check" element={<CheckPage />} />
           
           {/* 零部件库 */}
-          <Route path="/parts-library" element={<PlaceholderPage title="零部件库" subtitle="标准件/自定义件管理" />} />
+          <Route path="/parts-library" element={<PartsLibraryPage />} />
           
           {/* 选配设计 - 阀门选型配置器 */}
           <Route path="/option/valve/safety" element={<SafetyValvePage />} />
@@ -66,7 +84,7 @@ const Index = () => {
           <Route path="/option/valve/maintenance" element={<MaintenancePage />} />
           
           {/* 阀组件设计 */}
-          <Route path="/valve-design" element={<PlaceholderPage title="阀组件设计" subtitle="阀门/管路/接口设计" />} />
+          <Route path="/valve-design" element={<ValveDesignPage />} />
         </Routes>
       </Dashboard>
     </AppLayout>
