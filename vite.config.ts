@@ -5,6 +5,10 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  // GitHub Pages 部署时需要设置 base 为仓库名
+  // 例如: base: '/your-repo-name/'
+  // 本地开发时使用 '/'
+  base: mode === "production" ? "./" : "/",
   server: {
     host: "::",
     port: 8080,
