@@ -63,6 +63,18 @@ const navItems: NavItem[] = [
           { key: "maintenance", label: "维护清洗功能", path: "/option/valve/maintenance", icon: null },
         ],
       },
+      {
+        key: "verification",
+        label: "阀组件设计校核",
+        icon: null,
+        children: [
+          { key: "basic-verification", label: "基础信息核对", path: "/option/verification/basic", icon: null },
+          { key: "positioning", label: "阀件定位与核阀图", path: "/option/verification/positioning", icon: null },
+          { key: "procurement", label: "录入预采购传输", path: "/option/verification/procurement", icon: null },
+          { key: "component-drawing", label: "阀件组件图", path: "/option/verification/component-drawing", icon: null },
+          { key: "order-memo", label: "订单备忘", path: "/option/verification/order-memo", icon: null },
+        ],
+      },
     ],
   },
   {
@@ -76,7 +88,7 @@ const navItems: NavItem[] = [
 const MainSidebar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(["option", "valve-config"]);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(["option", "valve-config", "verification"]);
 
   const toggleGroup = (key: string) => {
     setExpandedGroups((prev) =>
