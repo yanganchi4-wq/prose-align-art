@@ -130,14 +130,91 @@
     }
 
     .nav-sub-item {
-      padding-left: 42px;
-      font-size: 12px;
+      padding-left: 32px;
+      font-size: 13px;
       color: rgba(232,246,255,0.68);
     }
 
     .nav-sub-item.active {
       color: var(--accent);
       background: rgba(26,163,255,0.10);
+    }
+
+    .nav-sub-item.level-3 {
+      padding-left: 48px;
+    }
+
+    .nav-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(232,246,255,0.5);
+      box-shadow: 0 0 0 2px rgba(26,163,255,0.18);
+      flex-shrink: 0;
+    }
+
+    .nav-item.active .nav-dot {
+      background: var(--accent);
+    }
+
+    .nav-group-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      color: rgba(232,246,255,0.82);
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-bottom: 2px;
+    }
+
+    .nav-group-header:hover {
+      background: rgba(255,255,255,0.1);
+      transform: translateX(2px);
+    }
+
+    .nav-group-header.active {
+      background: rgba(26,163,255,0.2);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
+    }
+
+    .nav-arrow {
+      margin-left: auto;
+      font-size: 12px;
+      transition: transform 0.3s;
+    }
+
+    .nav-arrow.expanded {
+      transform: rotate(90deg);
+    }
+
+    .nav-group-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    .nav-group-content.expanded {
+      max-height: 800px;
+    }
+
+    .nav-subgroup-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px 8px 32px;
+      font-size: 13px;
+      font-weight: 700;
+      color: rgba(232,246,255,0.55);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .nav-subgroup-header:hover {
+      color: rgba(232,246,255,0.8);
     }
 
     /* Topbar */
@@ -1164,106 +1241,141 @@
       <div class="sidebar-header">
         <div class="sidebar-logo">▣</div>
         <div class="sidebar-title">
-          罐箱总体设计平台
-          <span>AI辅助设计系统</span>
+          罐箱产品AI辅助设计系统平台
         </div>
       </div>
 
       <nav>
-        <div class="nav-group">
-          <div class="nav-item" onclick="showPage('home')">
-            <span class="nav-item-icon">🏠</span>
-            首页
-          </div>
+        <!-- 首页 -->
+        <div class="nav-item" onclick="showPage('home')" data-page="home">
+          <span class="nav-item-icon">🏠</span>
+          首页
         </div>
 
-        <div class="nav-group">
-          <div class="nav-group-title">总体设计</div>
-          <div class="nav-item" onclick="showPage('spec')">
-            <span class="nav-item-icon">📋</span>
+        <!-- 总体设计 - 可折叠 -->
+        <div class="nav-group-header" onclick="toggleNavGroup('overall')">
+          <span class="nav-item-icon">📐</span>
+          <span>总体设计</span>
+          <span class="nav-arrow" id="arrow-overall">›</span>
+        </div>
+        <div class="nav-group-content" id="group-overall">
+          <div class="nav-item nav-sub-item" onclick="showPage('spec')" data-page="spec">
+            <span class="nav-dot"></span>
             设计规范
           </div>
-          <div class="nav-item" onclick="showPage('frame')">
-            <span class="nav-item-icon">🏗️</span>
+          <div class="nav-item nav-sub-item" onclick="showPage('frame')" data-page="frame">
+            <span class="nav-dot"></span>
             框架
           </div>
-          <div class="nav-item" onclick="showPage('tank')">
-            <span class="nav-item-icon">🛢️</span>
+          <div class="nav-item nav-sub-item" onclick="showPage('tank')" data-page="tank">
+            <span class="nav-dot"></span>
             罐体
           </div>
-          <div class="nav-item" onclick="showPage('parts')">
-            <span class="nav-item-icon">⚙️</span>
+          <div class="nav-item nav-sub-item" onclick="showPage('parts')" data-page="parts">
+            <span class="nav-dot"></span>
             部件
           </div>
-          <div class="nav-item" onclick="showPage('insulation')">
-            <span class="nav-item-icon">🧊</span>
+          <div class="nav-item nav-sub-item" onclick="showPage('insulation')" data-page="insulation">
+            <span class="nav-dot"></span>
             保温＆外包
           </div>
-          <div class="nav-item" onclick="showPage('protection')">
-            <span class="nav-item-icon">🛡️</span>
+          <div class="nav-item nav-sub-item" onclick="showPage('protection')" data-page="protection">
+            <span class="nav-dot"></span>
             防腐保护
           </div>
-          <div class="nav-item" onclick="showPage('quote')">
-            <span class="nav-item-icon">📄</span>
+          <div class="nav-item nav-sub-item" onclick="showPage('quote')" data-page="quote">
+            <span class="nav-dot"></span>
             报价总图
           </div>
         </div>
 
-        <div class="nav-group">
-          <div class="nav-group-title">布局设计</div>
-          <div class="nav-item" onclick="showPage('position')">
-            <span class="nav-item-icon">📍</span>
+        <!-- 布局设计 - 可折叠 -->
+        <div class="nav-group-header" onclick="toggleNavGroup('layout')">
+          <span class="nav-item-icon">📐</span>
+          <span>布局设计</span>
+          <span class="nav-arrow" id="arrow-layout">›</span>
+        </div>
+        <div class="nav-group-content" id="group-layout">
+          <div class="nav-item nav-sub-item" onclick="showPage('position')" data-page="position">
+            <span class="nav-dot"></span>
             位置信息
           </div>
-          <div class="nav-item" onclick="showPage('check')">
-            <span class="nav-item-icon">✅</span>
+          <div class="nav-item nav-sub-item" onclick="showPage('check')" data-page="check">
+            <span class="nav-dot"></span>
             校核信息
           </div>
         </div>
 
-        <div class="nav-group">
-          <div class="nav-group-title">选配设计</div>
-          <div class="nav-sub-item" style="padding-left: 24px; font-weight: 800; margin-bottom: 4px; color: rgba(232,246,255,0.5);">阀门选型配置器</div>
-          <div class="nav-item nav-sub-item" onclick="showPage('safety')">
-            安全阀选配
+        <!-- 零部件库 -->
+        <div class="nav-item" onclick="showPage('parts-library')" data-page="parts-library">
+          <span class="nav-item-icon">📦</span>
+          零部件库
+        </div>
+
+        <!-- 选配设计 - 可折叠 -->
+        <div class="nav-group-header" onclick="toggleNavGroup('option')">
+          <span class="nav-item-icon">⚙️</span>
+          <span>选配设计</span>
+          <span class="nav-arrow" id="arrow-option">›</span>
+        </div>
+        <div class="nav-group-content" id="group-option">
+          <!-- 阀门选型配置器 子组 -->
+          <div class="nav-subgroup-header" onclick="toggleNavGroup('valve-config'); event.stopPropagation();">
+            <span>阀门选型配置器</span>
+            <span class="nav-arrow" id="arrow-valve-config">›</span>
           </div>
-          <div class="nav-item nav-sub-item" onclick="showPage('control')">
-            控制阀选配
+          <div class="nav-group-content" id="group-valve-config">
+            <div class="nav-item nav-sub-item level-3" onclick="showPage('safety')" data-page="safety">
+              <span class="nav-dot"></span>
+              安全阀选配
+            </div>
+            <div class="nav-item nav-sub-item level-3" onclick="showPage('control')" data-page="control">
+              <span class="nav-dot"></span>
+              控制阀选配
+            </div>
+            <div class="nav-item nav-sub-item level-3" onclick="showPage('flange')" data-page="flange">
+              <span class="nav-dot"></span>
+              凸缘选配
+            </div>
+            <div class="nav-item nav-sub-item level-3" onclick="showPage('maintenance')" data-page="maintenance">
+              <span class="nav-dot"></span>
+              维护清洗功能
+            </div>
           </div>
-          <div class="nav-item nav-sub-item" onclick="showPage('flange')">
-            凸缘选配
+
+          <!-- 阀组件设计校核 子组 -->
+          <div class="nav-subgroup-header" onclick="toggleNavGroup('verify'); event.stopPropagation();">
+            <span>阀组件设计校核</span>
+            <span class="nav-arrow" id="arrow-verify">›</span>
           </div>
-          <div class="nav-item nav-sub-item" onclick="showPage('maintenance')">
-            维护清洗功能
-          </div>
-          <div class="nav-sub-item" style="padding-left: 24px; font-weight: 800; margin-bottom: 4px; margin-top: 12px; color: rgba(232,246,255,0.5);">阀组件设计校核</div>
-          <div class="nav-item nav-sub-item" onclick="showPage('verify-basic')">
-            基础信息核对
-          </div>
-          <div class="nav-item nav-sub-item" onclick="showPage('verify-position')">
-            定位属性确认
-          </div>
-          <div class="nav-item nav-sub-item" onclick="showPage('verify-procurement')">
-            采购信息传递
-          </div>
-          <div class="nav-item nav-sub-item" onclick="showPage('verify-drawing')">
-            部件图配置
-          </div>
-          <div class="nav-item nav-sub-item" onclick="showPage('verify-memo')">
-            订单备注模板
+          <div class="nav-group-content" id="group-verify">
+            <div class="nav-item nav-sub-item level-3" onclick="showPage('verify-basic')" data-page="verify-basic">
+              <span class="nav-dot"></span>
+              基础信息核对
+            </div>
+            <div class="nav-item nav-sub-item level-3" onclick="showPage('verify-position')" data-page="verify-position">
+              <span class="nav-dot"></span>
+              阀件定位与核阀图
+            </div>
+            <div class="nav-item nav-sub-item level-3" onclick="showPage('verify-procurement')" data-page="verify-procurement">
+              <span class="nav-dot"></span>
+              录入预采购传输
+            </div>
+            <div class="nav-item nav-sub-item level-3" onclick="showPage('verify-drawing')" data-page="verify-drawing">
+              <span class="nav-dot"></span>
+              阀件组件图
+            </div>
+            <div class="nav-item nav-sub-item level-3" onclick="showPage('verify-memo')" data-page="verify-memo">
+              <span class="nav-dot"></span>
+              订单备忘
+            </div>
           </div>
         </div>
 
-        <div class="nav-group">
-          <div class="nav-group-title">其他</div>
-          <div class="nav-item" onclick="showPage('parts-library')">
-            <span class="nav-item-icon">📦</span>
-            零部件库
-          </div>
-          <div class="nav-item" onclick="showPage('valve-design')">
-            <span class="nav-item-icon">🔧</span>
-            阀组件设计
-          </div>
+        <!-- 阀组件设计 -->
+        <div class="nav-item" onclick="showPage('valve-design')" data-page="valve-design">
+          <span class="nav-item-icon">🔧</span>
+          阀组件设计
         </div>
       </nav>
     </aside>
@@ -3209,9 +3321,7 @@
       document.getElementById('breadcrumb').textContent = breadcrumbMap[pageId] || pageId;
       
       // Update active nav item
-      document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active');
-      });
+      updateActiveNav(pageId);
     }
 
     function showToast(message, type = 'info') {
@@ -3275,8 +3385,57 @@
       alert('配置完成！\n\n感谢使用阀门选型配置器！我们将根据您的选择为您提供详细的技术方案和报价。');
     }
 
-    // Initialize
-    showPage('home');
+    function toggleNavGroup(groupId) {
+      const content = document.getElementById('group-' + groupId);
+      const arrow = document.getElementById('arrow-' + groupId);
+      
+      if (content && arrow) {
+        content.classList.toggle('expanded');
+        arrow.classList.toggle('expanded');
+      }
+    }
+
+    function updateActiveNav(pageId) {
+      // Remove all active states
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      document.querySelectorAll('.nav-group-header').forEach(header => {
+        header.classList.remove('active');
+      });
+      
+      // Find and activate the current item
+      const activeItem = document.querySelector(`[data-page="${pageId}"]`);
+      if (activeItem) {
+        activeItem.classList.add('active');
+      }
+      
+      // Check which groups should be active based on the page
+      const overallPages = ['spec', 'frame', 'tank', 'parts', 'insulation', 'protection', 'quote'];
+      const layoutPages = ['position', 'check'];
+      const valveConfigPages = ['safety', 'control', 'flange', 'maintenance'];
+      const verifyPages = ['verify-basic', 'verify-position', 'verify-procurement', 'verify-drawing', 'verify-memo'];
+      
+      if (overallPages.includes(pageId)) {
+        document.querySelector('[onclick*="toggleNavGroup(\'overall\')"]')?.classList.add('active');
+      } else if (layoutPages.includes(pageId)) {
+        document.querySelector('[onclick*="toggleNavGroup(\'layout\')"]')?.classList.add('active');
+      } else if (valveConfigPages.includes(pageId) || verifyPages.includes(pageId)) {
+        document.querySelector('[onclick*="toggleNavGroup(\'option\')"]')?.classList.add('active');
+      }
+    }
+
+    // Initialize - expand default groups and show home
+    function initNav() {
+      // Expand default groups
+      toggleNavGroup('option');
+      toggleNavGroup('valve-config');
+      toggleNavGroup('verify');
+      
+      showPage('home');
+    }
+
+    initNav();
   </script>
 </body>
 </html>
