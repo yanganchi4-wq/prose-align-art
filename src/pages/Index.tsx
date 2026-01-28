@@ -1,125 +1,73 @@
-import React, { useState, useCallback } from "react";
-import { toast } from "sonner";
+import React from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
-import Sidebar from "@/components/layout/Sidebar";
-import Topbar from "@/components/layout/Topbar";
+import MainSidebar from "@/components/layout/MainSidebar";
+import MainTopbar from "@/components/layout/MainTopbar";
 import Dashboard from "@/components/valve/Dashboard";
-import SafetyValveStep from "@/components/valve/steps/SafetyValveStep";
-import ControlValveStep from "@/components/valve/steps/ControlValveStep";
-import FlangeStep from "@/components/valve/steps/FlangeStep";
-import MaintenanceStep from "@/components/valve/steps/MaintenanceStep";
+import HomePage from "@/pages/HomePage";
+import PlaceholderPage from "@/pages/PlaceholderPage";
+import SafetyValvePage from "@/pages/valve/SafetyValvePage";
+import ControlValvePage from "@/pages/valve/ControlValvePage";
+import FlangePage from "@/pages/valve/FlangePage";
+import MaintenancePage from "@/pages/valve/MaintenancePage";
 
-const stepNames: Record<number, string> = {
-  1: "安全阀选配",
-  2: "控制阀选配",
-  3: "凸缘选配",
-  4: "维护清洗功能",
+const breadcrumbMap: Record<string, string> = {
+  "/": "首页",
+  "/overall/spec": "总体设计 / 设计规范",
+  "/overall/frame": "总体设计 / 框架",
+  "/overall/tank": "总体设计 / 罐体",
+  "/overall/parts": "总体设计 / 部件",
+  "/overall/insulation": "总体设计 / 保温＆外包",
+  "/overall/protection": "总体设计 / 防腐保护",
+  "/overall/quote": "总体设计 / 报价总图",
+  "/layout/position": "布局设计 / 位置信息",
+  "/layout/check": "布局设计 / 校核信息",
+  "/parts-library": "零部件库",
+  "/option/valve/safety": "选配设计 / 阀门选型配置器 / 安全阀选配",
+  "/option/valve/control": "选配设计 / 阀门选型配置器 / 控制阀选配",
+  "/option/valve/flange": "选配设计 / 阀门选型配置器 / 凸缘选配",
+  "/option/valve/maintenance": "选配设计 / 阀门选型配置器 / 维护清洗功能",
+  "/valve-design": "阀组件设计",
 };
 
 const Index = () => {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
-  const [selectedModels, setSelectedModels] = useState<{
-    safetyValve: string | null;
-    controlValve: string | null;
-    flange: string | null;
-    maintenance: string | null;
-  }>({
-    safetyValve: null,
-    controlValve: null,
-    flange: null,
-    maintenance: null,
-  });
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-
-  const handleStepChange = useCallback((step: number) => {
-    setCurrentStep(step);
-  }, []);
-
-  const handleNext = useCallback(() => {
-    if (currentStep < 4) {
-      setCompletedSteps((prev) =>
-        prev.includes(currentStep) ? prev : [...prev, currentStep]
-      );
-      setCurrentStep(currentStep + 1);
-    }
-  }, [currentStep]);
-
-  const handlePrev = useCallback(() => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  }, [currentStep]);
-
-  const handleModelSelect = useCallback(
-    (type: "safetyValve" | "controlValve" | "flange" | "maintenance", model: string) => {
-      setSelectedModels((prev) => ({ ...prev, [type]: model }));
-      toast.success(`已选择: ${model}`);
-    },
-    []
-  );
-
-  const handleFinish = useCallback(() => {
-    const summary = `配置完成！
-
-已选配置：
-- 安全阀: ${selectedModels.safetyValve || "未选择"}
-- 控制阀: ${selectedModels.controlValve || "未选择"}
-- 凸缘: ${selectedModels.flange || "未选择"}
-- 维护清洗: ${selectedModels.maintenance || "未选择"}
-
-感谢使用阀门选型配置器！我们将根据您的选择为您提供详细的技术方案和报价。`;
-
-    toast.success("配置已提交！");
-    alert(summary);
-  }, [selectedModels]);
-
-  const breadcrumb = `选配设计 / 阀门类型选配器 / ${stepNames[currentStep]}`;
-  const stepIndicator = `步骤 ${currentStep}/4`;
+  const location = useLocation();
+  const breadcrumb = breadcrumbMap[location.pathname] || "首页";
 
   return (
     <AppLayout
-      sidebar={
-        <Sidebar
-          currentStep={currentStep}
-          onStepChange={handleStepChange}
-          completedSteps={completedSteps}
-        />
-      }
-      topbar={<Topbar breadcrumb={breadcrumb} stepIndicator={stepIndicator} />}
+      sidebar={<MainSidebar />}
+      topbar={<MainTopbar breadcrumb={breadcrumb} />}
     >
       <Dashboard>
-        {currentStep === 1 && (
-          <SafetyValveStep
-            onNext={handleNext}
-            selectedCategory={selectedCategory}
-            onCategorySelect={setSelectedCategory}
-            onModelSelect={(model) => handleModelSelect("safetyValve", model)}
-          />
-        )}
-        {currentStep === 2 && (
-          <ControlValveStep
-            onNext={handleNext}
-            onPrev={handlePrev}
-            onModelSelect={(model) => handleModelSelect("controlValve", model)}
-          />
-        )}
-        {currentStep === 3 && (
-          <FlangeStep
-            onNext={handleNext}
-            onPrev={handlePrev}
-            selectedSafetyValve={selectedModels.safetyValve}
-            selectedControlValve={selectedModels.controlValve}
-            onModelSelect={(model) => handleModelSelect("flange", model)}
-          />
-        )}
-        {currentStep === 4 && (
-          <MaintenanceStep
-            onPrev={handlePrev}
-            onFinish={handleFinish}
-            onModelSelect={(model) => handleModelSelect("maintenance", model)}
-          />
-        )}
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          
+          {/* 总体设计 */}
+          <Route path="/overall/spec" element={<PlaceholderPage title="设计规范" subtitle="总体设计 - 参数录入" />} />
+          <Route path="/overall/frame" element={<PlaceholderPage title="框架" subtitle="总体设计 - 框架配置" />} />
+          <Route path="/overall/tank" element={<PlaceholderPage title="罐体" subtitle="总体设计 - 罐体设计" />} />
+          <Route path="/overall/parts" element={<PlaceholderPage title="部件" subtitle="总体设计 - 部件管理" />} />
+          <Route path="/overall/insulation" element={<PlaceholderPage title="保温＆外包" subtitle="总体设计 - 保温外包配置" />} />
+          <Route path="/overall/protection" element={<PlaceholderPage title="防腐保护" subtitle="总体设计 - 防腐保护设计" />} />
+          <Route path="/overall/quote" element={<PlaceholderPage title="报价总图" subtitle="总体设计 - 二维图纸" />} />
+          
+          {/* 布局设计 */}
+          <Route path="/layout/position" element={<PlaceholderPage title="位置信息" subtitle="布局设计 - 部件位置配置" />} />
+          <Route path="/layout/check" element={<PlaceholderPage title="校核信息" subtitle="布局设计 - 空间校核" />} />
+          
+          {/* 零部件库 */}
+          <Route path="/parts-library" element={<PlaceholderPage title="零部件库" subtitle="标准件/自定义件管理" />} />
+          
+          {/* 选配设计 - 阀门选型配置器 */}
+          <Route path="/option/valve/safety" element={<SafetyValvePage />} />
+          <Route path="/option/valve/control" element={<ControlValvePage />} />
+          <Route path="/option/valve/flange" element={<FlangePage />} />
+          <Route path="/option/valve/maintenance" element={<MaintenancePage />} />
+          
+          {/* 阀组件设计 */}
+          <Route path="/valve-design" element={<PlaceholderPage title="阀组件设计" subtitle="阀门/管路/接口设计" />} />
+        </Routes>
       </Dashboard>
     </AppLayout>
   );
