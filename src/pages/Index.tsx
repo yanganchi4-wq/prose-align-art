@@ -29,6 +29,13 @@ import ControlValvePage from "@/pages/valve/ControlValvePage";
 import FlangePage from "@/pages/valve/FlangePage";
 import MaintenancePage from "@/pages/valve/MaintenancePage";
 
+// 选配设计 - 阀组件设计校核
+import BasicVerificationPage from "@/pages/verification/BasicVerificationPage";
+import PositioningPage from "@/pages/verification/PositioningPage";
+import ProcurementPage from "@/pages/verification/ProcurementPage";
+import ComponentDrawingPage from "@/pages/verification/ComponentDrawingPage";
+import OrderMemoPage from "@/pages/verification/OrderMemoPage";
+
 const breadcrumbMap: Record<string, string> = {
   "/": "首页",
   "/overall/spec": "总体设计 / 设计规范",
@@ -45,6 +52,11 @@ const breadcrumbMap: Record<string, string> = {
   "/option/valve/control": "选配设计 / 阀门选型配置器 / 控制阀选配",
   "/option/valve/flange": "选配设计 / 阀门选型配置器 / 凸缘选配",
   "/option/valve/maintenance": "选配设计 / 阀门选型配置器 / 维护清洗功能",
+  "/option/verification/basic": "选配设计 / 阀组件设计校核 / 基础信息核对",
+  "/option/verification/positioning": "选配设计 / 阀组件设计校核 / 阀件定位与核阀图",
+  "/option/verification/procurement": "选配设计 / 阀组件设计校核 / 录入预采购传输",
+  "/option/verification/component-drawing": "选配设计 / 阀组件设计校核 / 阀件组件图",
+  "/option/verification/order-memo": "选配设计 / 阀组件设计校核 / 订单备忘",
   "/valve-design": "阀组件设计",
 };
 
@@ -82,6 +94,13 @@ const Index = () => {
           <Route path="/option/valve/control" element={<ControlValvePage />} />
           <Route path="/option/valve/flange" element={<FlangePage />} />
           <Route path="/option/valve/maintenance" element={<MaintenancePage />} />
+          
+          {/* 选配设计 - 阀组件设计校核 */}
+          <Route path="/option/verification/basic" element={<BasicVerificationPage />} />
+          <Route path="/option/verification/positioning" element={<PositioningPage />} />
+          <Route path="/option/verification/procurement" element={<ProcurementPage />} />
+          <Route path="/option/verification/component-drawing" element={<ComponentDrawingPage />} />
+          <Route path="/option/verification/order-memo" element={<OrderMemoPage />} />
           
           {/* 阀组件设计 */}
           <Route path="/valve-design" element={<ValveDesignPage />} />
