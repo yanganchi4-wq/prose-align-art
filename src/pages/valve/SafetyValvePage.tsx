@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import FormCard from "@/components/valve/FormCard";
 import CategoryCard from "@/components/valve/CategoryCard";
@@ -9,6 +9,7 @@ import HighlightBox from "@/components/valve/HighlightBox";
 import RecommendationCard from "@/components/valve/RecommendationCard";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Download } from "lucide-react";
 
 const categories = [
   { id: "3.1", name: "3.1 常规安全阀", desc: "标准应用" },
@@ -53,12 +54,79 @@ const brandOptions = [
   { value: "品牌3", label: "品牌3" },
 ];
 
+// 解析温度范围字符串，如 "-40℃ ~ +130℃"
+const parseTemperatureRange = (tempStr: string) => {
+  const match = tempStr.match(/(-?\d+).*?~.*?([+-]?\d+)/);
+  if (match) {
+    return { min: match[1], max: match[2].replace('+', '') };
+  }
+  return { min: "", max: "" };
+};
+
+// 解析压力字符串，如 "0.45 MPa"
+const parsePressure = (pressureStr: string) => {
+  const match = pressureStr.match(/([\d.]+)/);
+  if (match) {
+    // 如果是 MPa，转换为 bar (1 MPa = 10 bar)
+    const value = parseFloat(match[1]);
+    if (pressureStr.includes("MPa")) {
+      return (value * 10).toString();
+    }
+    return value.toString();
+  }
+  return "";
+};
+
 const SafetyValvePage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [maxTemp, setMaxTemp] = useState("");
+  const [minTemp, setMinTemp] = useState("");
+  const [designPressure, setDesignPressure] = useState("");
+  const [setPressure, setSetPressure] = useState("");
+  const [hasSpecData, setHasSpecData] = useState(false);
+
+  // 检查是否有设计规范数据
+  useEffect(() => {
+    const specData = localStorage.getItem("designSpec");
+    setHasSpecData(!!specData);
+  }, []);
 
   const handleModelSelect = (model: string) => {
     toast.success(`已选择: ${model}`);
+  };
+
+  const handleImportFromSpec = () => {
+    const specData = localStorage.getItem("designSpec");
+    if (!specData) {
+      toast.error("未找到设计规范数据，请先在总体设计中保存设计规范");
+      return;
+    }
+
+    try {
+      const spec = JSON.parse(specData);
+      
+      // 解析温度范围
+      if (spec.designTemperature) {
+        const temps = parseTemperatureRange(spec.designTemperature);
+        setMinTemp(temps.min);
+        setMaxTemp(temps.max);
+      }
+      
+      // 解析设计压力
+      if (spec.designPressure) {
+        const pressure = parsePressure(spec.designPressure);
+        setDesignPressure(pressure);
+        // 设定压力默认为设计压力的 80%
+        if (pressure) {
+          setSetPressure((parseFloat(pressure) * 0.8).toFixed(1));
+        }
+      }
+
+      toast.success("已从设计规范导入参数");
+    } catch (e) {
+      toast.error("解析设计规范数据失败");
+    }
   };
 
   return (
@@ -90,21 +158,45 @@ const SafetyValvePage: React.FC = () => {
       </FormCard>
 
       <FormCard title="核心参数">
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-sm text-muted-foreground">
+            可手动输入或从设计规范自动导入
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleImportFromSpec}
+            className="gap-2"
+          >
+            <Download className="w-4 h-4" />
+            从设计规范导入
+            {hasSpecData && (
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            )}
+          </Button>
+        </div>
+
         <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
           <FormInput
             label="设计温度最高值 (°C)"
             type="number"
             placeholder="例如: 180"
+            value={maxTemp}
+            onChange={(e) => setMaxTemp(e.target.value)}
           />
           <FormInput
             label="设计温度最低值 (°C)"
             type="number"
             placeholder="例如: -20"
+            value={minTemp}
+            onChange={(e) => setMinTemp(e.target.value)}
           />
           <FormInput
             label="设计压力 (bar)"
             type="number"
             placeholder="例如: 10"
+            value={designPressure}
+            onChange={(e) => setDesignPressure(e.target.value)}
           />
         </div>
 
@@ -114,6 +206,8 @@ const SafetyValvePage: React.FC = () => {
             type="number"
             placeholder="例如: 8"
             className="!mb-0 border-warning"
+            value={setPressure}
+            onChange={(e) => setSetPressure(e.target.value)}
           />
         </HighlightBox>
       </FormCard>
