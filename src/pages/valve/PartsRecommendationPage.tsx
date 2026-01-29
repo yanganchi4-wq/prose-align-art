@@ -332,8 +332,8 @@ const PartsRecommendationPage: React.FC = () => {
       )}
 
       <div className="flex justify-end gap-3 mt-6">
-        <Button variant="outline" onClick={() => navigate("/option/valve/maintenance")}>
-          ← 返回维护选配
+        <Button variant="outline" onClick={() => navigate("/valve-design")}>
+          ← 返回阀组件总览
         </Button>
         <Button
           className="bg-gradient-to-r from-accent to-accent/70 hover:shadow-hover"

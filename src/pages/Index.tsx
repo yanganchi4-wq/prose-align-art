@@ -53,7 +53,7 @@ const breadcrumbMap: Record<string, string> = {
   "/option/valve/control": "选配设计 / 阀门选型配置器 / 控制阀选配",
   "/option/valve/flange": "选配设计 / 阀门选型配置器 / 凸缘选配",
   "/option/valve/maintenance": "选配设计 / 阀门选型配置器 / 维护清洗功能",
-  "/option/valve/parts-recommendation": "选配设计 / 阀门选型配置器 / 智能零件推荐",
+  "/valve-design/parts-recommendation": "阀组件设计 / 智能零件推荐",
   "/option/verification/basic": "选配设计 / 阀组件设计校核 / 基础信息核对",
   "/option/verification/positioning": "选配设计 / 阀组件设计校核 / 阀件定位与核阀图",
   "/option/verification/procurement": "选配设计 / 阀组件设计校核 / 录入预采购传输",
@@ -96,7 +96,8 @@ const Index = () => {
           <Route path="/option/valve/control" element={<ControlValvePage />} />
           <Route path="/option/valve/flange" element={<FlangePage />} />
           <Route path="/option/valve/maintenance" element={<MaintenancePage />} />
-          <Route path="/option/valve/parts-recommendation" element={<PartsRecommendationPage />} />
+          {/* 阀组件设计 */}
+          <Route path="/valve-design/parts-recommendation" element={<PartsRecommendationPage />} />
           
           {/* 选配设计 - 阀组件设计校核 */}
           <Route path="/option/verification/basic" element={<BasicVerificationPage />} />
