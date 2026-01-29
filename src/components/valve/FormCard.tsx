@@ -2,7 +2,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 
 interface FormCardProps {
-  title: string;
+  title: React.ReactNode;
   children: React.ReactNode;
   className?: string;
 }
@@ -16,7 +16,7 @@ const FormCard: React.FC<FormCardProps> = ({ title, children, className }) => {
       )}
     >
       <h3 className="text-base font-bold text-foreground mb-5 flex items-center gap-2.5">
-        <span className="w-1.5 h-1.5 bg-accent rounded-full" />
+        <span className="w-1.5 h-1.5 bg-accent rounded-full flex-shrink-0" />
         {title}
       </h3>
       {children}

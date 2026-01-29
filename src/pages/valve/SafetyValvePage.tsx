@@ -157,25 +157,22 @@ const SafetyValvePage: React.FC = () => {
         </div>
       </FormCard>
 
-      <FormCard title="核心参数">
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-sm text-muted-foreground">
-            可手动输入或从设计规范自动导入
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleImportFromSpec}
-            className="gap-2"
-          >
-            <Download className="w-4 h-4" />
-            从设计规范导入
-            {hasSpecData && (
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            )}
-          </Button>
-        </div>
-
+      <FormCard 
+        title={
+          <div className="flex items-center gap-3">
+            <span>核心参数</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleImportFromSpec}
+              className="h-6 px-2 text-xs gap-1"
+            >
+              <Download className="w-3 h-3" />
+              一键导入
+            </Button>
+          </div>
+        }
+      >
         <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
           <FormInput
             label="设计温度最高值 (°C)"
