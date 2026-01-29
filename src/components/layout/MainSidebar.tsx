@@ -61,6 +61,7 @@ const navItems: NavItem[] = [
           { key: "control-valve", label: "控制阀选配", path: "/option/valve/control", icon: null },
           { key: "flange", label: "凸缘选配", path: "/option/valve/flange", icon: null },
           { key: "maintenance", label: "维护清洗功能", path: "/option/valve/maintenance", icon: null },
+          { key: "parts-recommendation", label: "智能零件推荐", path: "/option/valve/parts-recommendation", icon: null },
         ],
       },
       {
