@@ -61,7 +61,6 @@ const navItems: NavItem[] = [
           { key: "control-valve", label: "控制阀选配", path: "/option/valve/control", icon: null },
           { key: "flange", label: "凸缘选配", path: "/option/valve/flange", icon: null },
           { key: "maintenance", label: "维护清洗功能", path: "/option/valve/maintenance", icon: null },
-          { key: "parts-recommendation", label: "智能零件推荐", path: "/option/valve/parts-recommendation", icon: null },
         ],
       },
       {
@@ -82,14 +81,17 @@ const navItems: NavItem[] = [
     key: "valve",
     label: "阀组件设计",
     icon: <Wrench className="w-[18px] h-[18px]" />,
-    path: "/valve-design",
+    children: [
+      { key: "valve-design-main", label: "阀组件总览", path: "/valve-design", icon: null },
+      { key: "parts-recommendation", label: "智能零件推荐", path: "/valve-design/parts-recommendation", icon: null },
+    ],
   },
 ];
 
 const MainSidebar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(["option", "valve-config", "verification"]);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(["option", "valve-config", "verification", "valve"]);
 
   const toggleGroup = (key: string) => {
     setExpandedGroups((prev) =>
