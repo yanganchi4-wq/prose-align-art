@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FormCard from "@/components/valve/FormCard";
 import FormInput from "@/components/valve/FormInput";
@@ -7,6 +7,7 @@ import FormTextarea from "@/components/valve/FormTextarea";
 import RecommendationCard from "@/components/valve/RecommendationCard";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Download } from "lucide-react";
 
 const recommendations = [
   {
@@ -35,11 +36,58 @@ const installOptions = [
   { value: "底部安装", label: "底部安装" },
 ];
 
+// 解析温度范围字符串
+const parseTemperatureRange = (tempStr: string) => {
+  const match = tempStr.match(/(-?\d+).*?~.*?([+-]?\d+)/);
+  if (match) {
+    return { min: match[1], max: match[2].replace('+', '') };
+  }
+  return { min: "", max: "" };
+};
+
+// 解析压力字符串
+const parsePressure = (pressureStr: string) => {
+  const match = pressureStr.match(/([\d.]+)/);
+  if (match) {
+    const value = parseFloat(match[1]);
+    if (pressureStr.includes("MPa")) {
+      return (value * 10).toString();
+    }
+    return value.toString();
+  }
+  return "";
+};
+
 const FlangePage: React.FC = () => {
   const navigate = useNavigate();
+  const [maxTemp, setMaxTemp] = useState("");
+  const [minTemp, setMinTemp] = useState("");
+  const [designPressure, setDesignPressure] = useState("");
 
   const handleModelSelect = (model: string) => {
     toast.success(`已选择: ${model}`);
+  };
+
+  const handleImportFromSpec = () => {
+    const specData = localStorage.getItem("designSpec");
+    if (!specData) {
+      toast.error("未找到设计规范数据，请先在总体设计中保存设计规范");
+      return;
+    }
+    try {
+      const spec = JSON.parse(specData);
+      if (spec.designTemperature) {
+        const temps = parseTemperatureRange(spec.designTemperature);
+        setMinTemp(temps.min);
+        setMaxTemp(temps.max);
+      }
+      if (spec.designPressure) {
+        setDesignPressure(parsePressure(spec.designPressure));
+      }
+      toast.success("已从设计规范导入参数");
+    } catch (e) {
+      toast.error("解析设计规范数据失败");
+    }
   };
 
   return (
@@ -80,11 +128,41 @@ const FlangePage: React.FC = () => {
         </div>
       </FormCard>
 
-      <FormCard title="设计参数">
+      <FormCard 
+        title={
+          <div className="flex items-center gap-3">
+            <span>设计参数</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleImportFromSpec}
+              className="h-6 px-2 text-xs gap-1"
+            >
+              <Download className="w-3 h-3" />
+              一键导入
+            </Button>
+          </div>
+        }
+      >
         <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
-          <FormInput label="设计温度最高值 (°C)" type="number" />
-          <FormInput label="设计温度最低值 (°C)" type="number" />
-          <FormInput label="设计压力 (bar)" type="number" />
+          <FormInput 
+            label="设计温度最高值 (°C)" 
+            type="number" 
+            value={maxTemp}
+            onChange={(e) => setMaxTemp(e.target.value)}
+          />
+          <FormInput 
+            label="设计温度最低值 (°C)" 
+            type="number" 
+            value={minTemp}
+            onChange={(e) => setMinTemp(e.target.value)}
+          />
+          <FormInput 
+            label="设计压力 (bar)" 
+            type="number" 
+            value={designPressure}
+            onChange={(e) => setDesignPressure(e.target.value)}
+          />
         </div>
       </FormCard>
 
