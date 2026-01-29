@@ -118,14 +118,14 @@ const BasicVerificationPage: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           {[
-            { label: "（1）主体材料", value: "316L不锈钢" },
+            { label: "主体材料", value: "316L不锈钢" },
             { label: "密封材料", value: "EPDM" },
-            { label: "（2）温度范围", value: "-20°C ~ 180°C" },
+            { label: "温度范围", value: "-20°C ~ 180°C" },
             { label: "压力等级", value: "10 bar" },
             { label: "法规要求", value: "FDA、3A卫生标准" },
-            { label: "（3）罐体材料", value: "316L不锈钢" },
+            { label: "罐体材料", value: "316L不锈钢" },
             { label: "表面粗糙度", value: "Ra 0.8" },
-            { label: "（4）结构型式", value: "法兰连接" },
+            { label: "结构型式", value: "法兰连接" },
             { label: "规格尺寸", value: "DN50" },
             { label: "连接尺寸", value: "PN16" },
             { label: "配件要求", value: "不锈钢螺栓、密封垫片" },
@@ -145,7 +145,7 @@ const BasicVerificationPage: React.FC = () => {
         {/* 产品扩展属性 - 介质/UN号 (9) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-blue-800">（9）装载介质</label>
+            <label className="text-sm font-semibold text-blue-800">装载介质</label>
             <input
               type="text"
               value="p-Phenylenediamine"
@@ -183,7 +183,7 @@ const BasicVerificationPage: React.FC = () => {
           <h3 className="text-base font-bold text-foreground flex items-center gap-2.5">
             <span className="w-1.5 h-1.5 rounded-full bg-accent" />
             <Users className="w-4 h-4 text-accent" />
-            （5）客户个性化要求表
+            客户个性化要求表
           </h3>
           {showCustomerReq ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
         </div>
@@ -278,21 +278,21 @@ const BasicVerificationPage: React.FC = () => {
             <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3">
               <FileText className="w-5 h-5 text-amber-600" />
             </div>
-            <div className="text-sm font-semibold text-foreground/80">（6）报价比较</div>
+            <div className="text-sm font-semibold text-foreground/80">报价比较</div>
             <div className="text-xs text-foreground/50 mt-1">查看额外要求</div>
           </div>
           <div className="p-4 rounded-xl border-2 border-dashed border-foreground/20 hover:border-accent transition-all cursor-pointer text-center">
             <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
               <FileText className="w-5 h-5 text-purple-600" />
             </div>
-            <div className="text-sm font-semibold text-foreground/80">（7）客户资料</div>
+            <div className="text-sm font-semibold text-foreground/80">客户资料</div>
             <div className="text-xs text-foreground/50 mt-1">其他提供资料</div>
           </div>
           <div className="p-4 rounded-xl border-2 border-dashed border-foreground/20 hover:border-accent transition-all cursor-pointer text-center">
             <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
               <FileText className="w-5 h-5 text-blue-600" />
             </div>
-            <div className="text-sm font-semibold text-foreground/80">（8）邮件通知</div>
+            <div className="text-sm font-semibold text-foreground/80">邮件通知</div>
             <div className="text-xs text-foreground/50 mt-1">其他要求</div>
           </div>
         </div>
@@ -306,12 +306,12 @@ const BasicVerificationPage: React.FC = () => {
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
-          <VerificationItem label="（1）介质兼容性" status="pass" note="主体材料、密封材料与货物兼容" />
-          <VerificationItem label="（2）温度压力法规" status="pass" note="满足设计要求" />
-          <VerificationItem label="（3）罐体材料一致性" status="pass" note="材料一致，表面粗糙度满足" />
-          <VerificationItem label="（4）结构规格尺寸" status="fail" note="连接尺寸与总图规范不符" />
-          <VerificationItem label="（5）客户个性化要求" status="pending" note="需确认特殊要求" />
-          <VerificationItem label="（9）介质UN号匹配" status="pass" note="UN1673 已确认" />
+          <VerificationItem label="介质兼容性" status="pass" note="主体材料、密封材料与货物兼容" />
+          <VerificationItem label="温度压力法规" status="pass" note="满足设计要求" />
+          <VerificationItem label="罐体材料一致性" status="pass" note="材料一致，表面粗糙度满足" />
+          <VerificationItem label="结构规格尺寸" status="fail" note="连接尺寸与总图规范不符" />
+          <VerificationItem label="客户个性化要求" status="pending" note="需确认特殊要求" />
+          <VerificationItem label="介质UN号匹配" status="pass" note="UN1673 已确认" />
         </div>
       </div>
 
@@ -320,7 +320,7 @@ const BasicVerificationPage: React.FC = () => {
         <h3 className="text-base font-bold text-foreground flex items-center gap-2.5 mb-5">
           <span className="w-1.5 h-1.5 rounded-full bg-accent" />
           <AlertTriangle className="w-4 h-4 text-amber-500" />
-          冲突问题审核（10）（11）（12）
+          冲突问题审核
         </h3>
 
         <div className="space-y-4">
