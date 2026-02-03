@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import FormCard from "../FormCard";
 import FormInput from "../FormInput";
 import FormSelect from "../FormSelect";
@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button";
 interface FlangeStepProps {
   onNext: () => void;
   onPrev: () => void;
-  selectedSafetyValve: string | null;
-  selectedControlValve: string | null;
-  onModelSelect: (model: string) => void;
+  selectedSafetyValves: string[];
+  selectedControlValves: string[];
+  onModelSelect: (models: string[]) => void;
 }
 
 const recommendations = [
@@ -44,10 +44,22 @@ const installOptions = [
 const FlangeStep: React.FC<FlangeStepProps> = ({
   onNext,
   onPrev,
-  selectedSafetyValve,
-  selectedControlValve,
+  selectedSafetyValves,
+  selectedControlValves,
   onModelSelect,
 }) => {
+  const [selectedModels, setSelectedModels] = useState<string[]>([]);
+
+  const toggleModel = (modelName: string) => {
+    setSelectedModels((prev) => {
+      const newSelection = prev.includes(modelName)
+        ? prev.filter((m) => m !== modelName)
+        : [...prev, modelName];
+      onModelSelect(newSelection);
+      return newSelection;
+    });
+  };
+
   return (
     <div className="p-6">
       <div className="mb-6">
@@ -55,7 +67,7 @@ const FlangeStep: React.FC<FlangeStepProps> = ({
           凸缘选配
         </h2>
         <p className="text-[13px] font-semibold text-foreground/55">
-          步骤 3 / 4 - 基于已选安全阀和控制阀配置凸缘
+          步骤 3 / 4 - 基于已选安全阀和控制阀配置凸缘（可多选）
         </p>
       </div>
 
@@ -65,23 +77,21 @@ const FlangeStep: React.FC<FlangeStepProps> = ({
             <label className="block mb-2 text-[13px] font-semibold text-foreground/80">
               安全阀型号
             </label>
-            <input
-              type="text"
-              className="w-full px-3.5 py-2.5 border-2 border-foreground/10 rounded-[10px] text-[13px] font-medium bg-muted"
-              value={selectedSafetyValve || "未选择"}
-              readOnly
-            />
+            <div className="w-full px-3.5 py-2.5 border-2 border-foreground/10 rounded-[10px] text-[13px] font-medium bg-muted min-h-[42px]">
+              {selectedSafetyValves.length > 0
+                ? selectedSafetyValves.join("、")
+                : "未选择"}
+            </div>
           </div>
           <div>
             <label className="block mb-2 text-[13px] font-semibold text-foreground/80">
               控制阀型号
             </label>
-            <input
-              type="text"
-              className="w-full px-3.5 py-2.5 border-2 border-foreground/10 rounded-[10px] text-[13px] font-medium bg-muted"
-              value={selectedControlValve || "未选择"}
-              readOnly
-            />
+            <div className="w-full px-3.5 py-2.5 border-2 border-foreground/10 rounded-[10px] text-[13px] font-medium bg-muted min-h-[42px]">
+              {selectedControlValves.length > 0
+                ? selectedControlValves.join("、")
+                : "未选择"}
+            </div>
           </div>
         </div>
       </FormCard>
@@ -126,14 +136,24 @@ const FlangeStep: React.FC<FlangeStepProps> = ({
       </FormCard>
 
       <FormCard title="推荐型号">
+        <p className="text-muted-foreground text-sm mb-2">
+          基于您输入的参数筛选出的推荐型号（可多选）：
+        </p>
+        {selectedModels.length > 0 && (
+          <p className="text-accent text-sm font-semibold mb-4">
+            已选择 {selectedModels.length} 个型号：{selectedModels.join("、")}
+          </p>
+        )}
         <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
           {recommendations.map((rec) => (
             <RecommendationCard
               key={rec.id}
               title={rec.name}
               specs={rec.specs}
+              selected={selectedModels.includes(rec.name)}
+              multiSelect={true}
               onViewDetails={() => alert(`查看产品详情: ${rec.id}`)}
-              onSelect={() => onModelSelect(rec.name)}
+              onSelect={() => toggleModel(rec.name)}
             />
           ))}
         </div>
