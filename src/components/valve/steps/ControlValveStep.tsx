@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 interface ControlValveStepProps {
   onNext: () => void;
   onPrev: () => void;
-  onModelSelect: (model: string) => void;
+  onModelSelect: (models: string[]) => void;
 }
 
 const primaryCategories = [
@@ -81,6 +81,17 @@ const ControlValveStep: React.FC<ControlValveStepProps> = ({
 }) => {
   const [primaryCategory, setPrimaryCategory] = useState<string | null>(null);
   const [secondaryCategory, setSecondaryCategory] = useState<string | null>(null);
+  const [selectedModels, setSelectedModels] = useState<string[]>([]);
+
+  const toggleModel = (modelName: string) => {
+    setSelectedModels((prev) => {
+      const newSelection = prev.includes(modelName)
+        ? prev.filter((m) => m !== modelName)
+        : [...prev, modelName];
+      onModelSelect(newSelection);
+      return newSelection;
+    });
+  };
 
   return (
     <div className="p-6">
@@ -89,7 +100,7 @@ const ControlValveStep: React.FC<ControlValveStepProps> = ({
           控制阀选配
         </h2>
         <p className="text-[13px] font-semibold text-foreground/55">
-          步骤 2 / 4 - 选择适合您系统的控制阀
+          步骤 2 / 4 - 选择适合您系统的控制阀（可多选）
         </p>
       </div>
 
@@ -157,14 +168,24 @@ const ControlValveStep: React.FC<ControlValveStepProps> = ({
       </FormCard>
 
       <FormCard title="推荐型号">
+        <p className="text-muted-foreground text-sm mb-2">
+          基于您输入的参数筛选出的推荐型号（可多选）：
+        </p>
+        {selectedModels.length > 0 && (
+          <p className="text-accent text-sm font-semibold mb-4">
+            已选择 {selectedModels.length} 个型号：{selectedModels.join("、")}
+          </p>
+        )}
         <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
           {recommendations.map((rec) => (
             <RecommendationCard
               key={rec.id}
               title={rec.name}
               specs={rec.specs}
+              selected={selectedModels.includes(rec.name)}
+              multiSelect={true}
               onViewDetails={() => alert(`查看产品详情: ${rec.id}`)}
-              onSelect={() => onModelSelect(rec.name)}
+              onSelect={() => toggleModel(rec.name)}
             />
           ))}
         </div>
