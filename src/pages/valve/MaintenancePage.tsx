@@ -69,9 +69,15 @@ const MaintenancePage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [designPressure, setDesignPressure] = useState("");
+  const [selectedModels, setSelectedModels] = useState<string[]>([]);
 
-  const handleModelSelect = (model: string) => {
-    toast.success(`已选择: ${model}`);
+  const toggleModel = (modelName: string) => {
+    setSelectedModels((prev) => {
+      const newSelection = prev.includes(modelName)
+        ? prev.filter((m) => m !== modelName)
+        : [...prev, modelName];
+      return newSelection;
+    });
   };
 
   const handleImportFromSpec = () => {
@@ -105,7 +111,7 @@ const MaintenancePage: React.FC = () => {
           维护清洗功能配置
         </h2>
         <p className="text-[13px] font-semibold text-foreground/55">
-          步骤 4 / 4 - 最后一步，配置维护和清洗功能
+          步骤 4 / 4 - 最后一步，配置维护和清洗功能（可多选）
         </p>
       </div>
 
@@ -175,14 +181,24 @@ const MaintenancePage: React.FC = () => {
       </FormCard>
 
       <FormCard title="推荐型号">
+        <p className="text-muted-foreground text-sm mb-2">
+          基于您输入的参数筛选出的推荐型号（可多选）：
+        </p>
+        {selectedModels.length > 0 && (
+          <p className="text-accent text-sm font-semibold mb-4">
+            已选择 {selectedModels.length} 个型号：{selectedModels.join("、")}
+          </p>
+        )}
         <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
           {recommendations.map((rec) => (
             <RecommendationCard
               key={rec.id}
               title={rec.name}
               specs={rec.specs}
+              selected={selectedModels.includes(rec.name)}
+              multiSelect={true}
               onViewDetails={() => alert(`查看产品详情: ${rec.id}`)}
-              onSelect={() => handleModelSelect(rec.name)}
+              onSelect={() => toggleModel(rec.name)}
             />
           ))}
         </div>
