@@ -1,13 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import FormCard from "@/components/valve/FormCard";
 import CategoryCard from "@/components/valve/CategoryCard";
 import FormSelect from "@/components/valve/FormSelect";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Sparkles, Check, Package, ChevronDown, ChevronUp } from "lucide-react";
+import { Sparkles, Check, Package, ChevronDown, ChevronUp, Boxes, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Progress } from "@/components/ui/progress";
 
+// 懒加载3D组件
+const AssemblyViewer3D = lazy(() => import("@/components/valve/AssemblyViewer3D"));
 // 组件分类数据
 const componentCategories = [
   { id: "manhole", name: "人孔、清洗孔组件", desc: "人孔盖、清洗孔等相关零件" },
@@ -124,11 +127,18 @@ const PartsRecommendationPage: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState<string>("FV型号");
   const [expandedRows, setExpandedRows] = useState<number[]>([]);
+  
+  // 智能装配状态
+  const [showAssembly, setShowAssembly] = useState(false);
+  const [isAssembling, setIsAssembling] = useState(false);
+  const [assemblyComplete, setAssemblyComplete] = useState(false);
 
   const handleCategorySelect = (catId: string) => {
     setSelectedCategory(catId);
     setSelectedSpec("");
     setRecommendedParts([]);
+    setShowAssembly(false);
+    setAssemblyComplete(false);
   };
 
   const handleGenerateRecommendation = () => {
@@ -165,6 +175,25 @@ const PartsRecommendationPage: React.FC = () => {
 
   const handleSelectPart = (partName: string) => {
     toast.success(`已添加: ${partName}`);
+  };
+
+  // 智能装配处理
+  const handleStartAssembly = () => {
+    setShowAssembly(true);
+    setIsAssembling(true);
+    setAssemblyComplete(false);
+    toast.info("开始智能装配...");
+  };
+
+  const handleAssemblyComplete = () => {
+    setIsAssembling(false);
+    setAssemblyComplete(true);
+    toast.success("智能装配完成！");
+  };
+
+  const handleResetAssembly = () => {
+    setIsAssembling(true);
+    setAssemblyComplete(false);
   };
 
   return (
@@ -331,6 +360,105 @@ const PartsRecommendationPage: React.FC = () => {
         </FormCard>
       )}
 
+      {/* 智能装配区域 */}
+      {recommendedParts.length > 0 && (
+        <FormCard title={
+          <span className="flex items-center gap-2">
+            <Boxes className="w-4 h-4 text-accent" />
+            智能装配
+          </span>
+        }>
+          {!showAssembly ? (
+            <div className="text-center py-8">
+              <div className="w-20 h-20 mx-auto rounded-2xl bg-accent/10 border border-accent/25 grid place-items-center mb-4">
+                <Boxes className="w-10 h-10 text-accent" />
+              </div>
+              <h4 className="text-lg font-bold text-foreground/85 mb-2">开始智能装配</h4>
+              <p className="text-sm text-foreground/55 mb-6 max-w-md mx-auto">
+                基于推荐的 {recommendedParts.length} 个零件，自动生成三维装配效果图
+              </p>
+              <Button
+                onClick={handleStartAssembly}
+                className="bg-gradient-to-r from-accent to-accent/70 hover:shadow-hover"
+              >
+                <Boxes className="w-4 h-4 mr-2" />
+                开始智能装配
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* 装配状态指示 */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {assemblyComplete ? (
+                    <div className="flex items-center gap-2 text-sm font-semibold text-green-600">
+                      <Check className="w-4 h-4" />
+                      装配完成
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-sm font-semibold text-accent">
+                      <span className="animate-spin">⚙️</span>
+                      正在装配...
+                    </div>
+                  )}
+                </div>
+                {assemblyComplete && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleResetAssembly}
+                    className="text-xs"
+                  >
+                    <RotateCcw className="w-3 h-3 mr-1" />
+                    重新装配
+                  </Button>
+                )}
+              </div>
+
+              {/* 3D 装配视图 */}
+              <Suspense fallback={
+                <div className="w-full h-[400px] rounded-2xl bg-muted/50 flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm font-semibold text-foreground/60">加载3D场景...</span>
+                  </div>
+                </div>
+              }>
+                <AssemblyViewer3D
+                  parts={recommendedParts}
+                  category={selectedCategory || ""}
+                  isAssembling={isAssembling}
+                  onAssemblyComplete={handleAssemblyComplete}
+                />
+              </Suspense>
+
+              {/* 零件图例 */}
+              {assemblyComplete && (
+                <div className="bg-foreground/3 rounded-xl p-4">
+                  <h5 className="text-xs font-bold text-foreground/60 mb-3 uppercase tracking-wider">
+                    零件图例
+                  </h5>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    {recommendedParts.map((part, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-2 text-xs text-foreground/70"
+                      >
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: getPartColorForLegend(part.partName) }}
+                        />
+                        <span className="truncate">{part.partName}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </FormCard>
+      )}
+
       <div className="flex justify-end gap-3 mt-6">
         <Button variant="outline" onClick={() => navigate("/option/valve/maintenance")}>
           ← 返回维护选配
@@ -344,6 +472,33 @@ const PartsRecommendationPage: React.FC = () => {
       </div>
     </div>
   );
+};
+
+// 零件颜色映射（用于图例）
+const partColors: Record<string, string> = {
+  "标准快开人孔": "#4a90d9",
+  "垫片": "#e74c3c",
+  "凸缘": "#f39c12",
+  "过渡法兰": "#9b59b6",
+  "螺固件": "#7f8c8d",
+  "安全阀": "#27ae60",
+  "螺塞": "#34495e",
+  "球阀主体": "#3498db",
+  "密封垫片": "#e74c3c",
+  "手柄组件": "#1abc9c",
+  "连接螺栓": "#7f8c8d",
+  "底阀主体": "#2980b9",
+  "法兰接口": "#8e44ad",
+  "密封组件": "#c0392b",
+};
+
+const getPartColorForLegend = (partName: string): string => {
+  for (const key of Object.keys(partColors)) {
+    if (partName.includes(key) || key.includes(partName.split("：")[0])) {
+      return partColors[key];
+    }
+  }
+  return "#6c757d";
 };
 
 export default PartsRecommendationPage;
